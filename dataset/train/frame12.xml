@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<annotation>
+    <folder/>
+    <filename>frame12.png</filename>
+    <path>frame12.png</path>
+    <source>
+        <database>roboflow.com</database>
+    </source>
+    <size>
+        <width>1024</width>
+        <height>768</height>
+        <depth>3</depth>
+    </size>
+    <segmented>0</segmented>
+    <object>
+        <name>vehicle type 3</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <occluded>0</occluded>
+        <bndbox>
+            <xmin>550</xmin>
+            <xmax>669</xmax>
+            <ymin>316</ymin>
+            <ymax>385</ymax>
+        </bndbox>
+    </object>
+    <object>
+        <name>vehicle type 1</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <occluded>0</occluded>
+        <bndbox>
+            <xmin>237</xmin>
+            <xmax>316</xmax>
+            <ymin>390</ymin>
+            <ymax>435</ymax>
+        </bndbox>
+    </object>
+</annotation>
