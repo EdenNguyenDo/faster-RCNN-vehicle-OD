@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision
 
-
+from helpers.helper import Helper
 
 
 class ROIHead(nn.Module):
@@ -50,7 +50,7 @@ class ROIHead(nn.Module):
             matched_gt_boxes: (number_of_proposals, 4)
         """
         # Get IOU Matrix between gt boxes and proposals
-        iou_matrix = get_iou(gt_boxes, proposals)
+        iou_matrix = Helper.get_iou(gt_boxes, proposals)
         # For each gt box proposal find best matching gt box
         best_match_iou, best_match_gt_idx = iou_matrix.max(dim=0)
         background_proposals = (best_match_iou < self.iou_threshold) & (best_match_iou >= self.low_bg_iou)
@@ -102,7 +102,7 @@ class ROIHead(nn.Module):
 
             labels, matched_gt_boxes_for_proposals = self.assign_target_to_proposals(proposals, gt_boxes, gt_labels)
 
-            sampled_neg_idx_mask, sampled_pos_idx_mask = sample_positive_negative(labels,
+            sampled_neg_idx_mask, sampled_pos_idx_mask = Helper.sample_positive_negative(labels,
                                                                                   positive_count=self.roi_pos_count,
                                                                                   total_count=self.roi_batch_size)
 
@@ -112,7 +112,7 @@ class ROIHead(nn.Module):
             proposals = proposals[sampled_idxs]
             labels = labels[sampled_idxs]
             matched_gt_boxes_for_proposals = matched_gt_boxes_for_proposals[sampled_idxs]
-            regression_targets = boxes_to_transformation_targets(matched_gt_boxes_for_proposals, proposals)
+            regression_targets = Helper.boxes_to_transformation_targets(matched_gt_boxes_for_proposals, proposals)
             # regression_targets -> (sampled_training_proposals, 4)
             # matched_gt_boxes_for_proposals -> (sampled_training_proposals, 4)
 
@@ -165,11 +165,11 @@ class ROIHead(nn.Module):
         else:
             device = cls_scores.device
             # Apply transformation predictions to proposals
-            pred_boxes = apply_regression_pred_to_anchors_or_proposals(box_transform_pred, proposals)
+            pred_boxes = Helper.apply_regression_pred_to_anchors_or_proposals(box_transform_pred, proposals)
             pred_scores = torch.nn.functional.softmax(cls_scores, dim=-1)
 
             # Clamp box to image boundary
-            pred_boxes = clamp_boxes_to_image_boundary(pred_boxes, image_shape)
+            pred_boxes = Helper.clamp_boxes_to_image_boundary(pred_boxes, image_shape)
 
             # create labels for each prediction
             pred_labels = torch.arange(num_classes, device=device)

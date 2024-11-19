@@ -4,9 +4,9 @@ import os
 import numpy as np
 import yaml
 import random
-from model.faster_rcnn import FasterRCNN
+from FRCNN_model import FasterRCNN
 from tqdm import tqdm
-from dataset.voc import VOCDataset
+from dataset.prepareData import VOCDataset
 from torch.utils.data.dataloader import DataLoader
 from torch.optim.lr_scheduler import MultiStepLR
 

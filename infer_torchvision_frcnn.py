@@ -7,8 +7,8 @@ import random
 import os
 import yaml
 from tqdm import tqdm
-from model.faster_rcnn import FasterRCNN
-from dataset.voc import VOCDataset
+from FRCNN_model import FasterRCNN
+from dataset.prepareData import VOCDataset
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.anchor_utils import AnchorGenerator

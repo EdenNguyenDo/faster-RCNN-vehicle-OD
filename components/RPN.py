@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+from helpers.helper import Helper
 """
 Define the RPN network for feature extraction
 """
@@ -131,7 +131,7 @@ class RegionProposalNetwork(nn.Module):
         """
 
         # Get (gt_boxes, num_anchors_in_image) IOU matrix
-        iou_matrix = get_iou(gt_boxes, anchors)
+        iou_matrix = Helper.get_iou(gt_boxes, anchors)
 
         # For each anchor get the gt box index with maximum overlap
         best_match_iou, best_match_gt_idx = iou_matrix.max(dim=0)
@@ -219,7 +219,7 @@ class RegionProposalNetwork(nn.Module):
         ##################
 
         # Clamp boxes to image boundary
-        proposals = clamp_boxes_to_image_boundary(proposals, image_shape)
+        proposals = Helper.clamp_boxes_to_image_boundary(proposals, image_shape)
         ####################
 
         # Small boxes based on width and height filtering
@@ -291,7 +291,7 @@ class RegionProposalNetwork(nn.Module):
         # box_transform_pred -> (Batch_Size*H_feat*W_feat*Number of Anchors per location, 4)
 
         # Transform generated anchors according to box transformation prediction
-        proposals = apply_regression_pred_to_anchors_or_proposals(
+        proposals = Helper.apply_regression_pred_to_anchors_or_proposals(
             box_transform_pred.detach().reshape(-1, 1, 4),
             anchors)
         proposals = proposals.reshape(proposals.size(0), 4)
@@ -314,11 +314,11 @@ class RegionProposalNetwork(nn.Module):
             # Based on gt assignment above, get regression target for the anchors
             # matched_gt_boxes_for_anchors -> (Number of anchors in image, 4)
             # anchors -> (Number of anchors in image, 4)
-            regression_targets = boxes_to_transformation_targets(matched_gt_boxes_for_anchors, anchors)
+            regression_targets = Helper.boxes_to_transformation_targets(matched_gt_boxes_for_anchors, anchors)
 
             ####### Sampling positive and negative anchors ####
             # Our labels were {fg:1, bg:0, to_be_ignored:-1}
-            sampled_neg_idx_mask, sampled_pos_idx_mask = sample_positive_negative(
+            sampled_neg_idx_mask, sampled_pos_idx_mask = Helper.sample_positive_negative(
                 labels_for_anchors,
                 positive_count=self.rpn_pos_count,
                 total_count=self.rpn_batch_size)
