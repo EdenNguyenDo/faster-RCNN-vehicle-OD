@@ -59,9 +59,7 @@ class VtodDataset(Dataset):
         self.im_dir = im_dir
         self.ann_dir = ann_dir
         classes = [
-            'wheel', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep',
-            'aeroplane', 'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train',
-            'bottle', 'vehicle type 5', 'vehicle type 1', 'vehicle type 2', 'vehicle type 4', 'vehicle type 3'
+            'wheel', 'vehicle type 5', 'vehicle type 1', 'vehicle type 2', 'vehicle type 4', 'vehicle type 3'
         ]
         classes = sorted(classes)
         classes = ['background'] + classes

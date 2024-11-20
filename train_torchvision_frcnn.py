@@ -55,7 +55,7 @@ def train(args):
         )
         faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
             faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,
-            num_classes=21)
+            num_classes=7)
     else: # Plugin components and train a custom dataset.
         backbone = torchvision.models.resnet34(pretrained=True, norm_layer=torchvision.ops.FrozenBatchNorm2d)
         backbone = torch.nn.Sequential(*list(backbone.children())[:-3])
@@ -63,7 +63,7 @@ def train(args):
         roi_align = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'], output_size=7, sampling_ratio=2)
         rpn_anchor_generator = AnchorGenerator()
         faster_rcnn_model = torchvision.models.detection.FasterRCNN(backbone,
-                                                                    num_classes=21,
+                                                                    num_classes=7,
                                                                     min_size=600,
                                                                     max_size=1000,
                                                                     rpn_anchor_generator=rpn_anchor_generator,

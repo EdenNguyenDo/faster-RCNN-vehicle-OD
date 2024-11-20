@@ -38,7 +38,7 @@ def train(args):
                       im_dir=dataset_config['im_train_path'],
                       ann_dir=dataset_config['ann_train_path'])
     train_dataset = DataLoader(voc,
-                               batch_size=1,
+                               batch_size=2,
                                shuffle=True,
                                num_workers=4)
 

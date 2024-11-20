@@ -184,7 +184,7 @@ def load_model_and_dataset(args):
         )
         faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
             faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,
-            num_classes=21)
+            num_classes=7)
     else:
         backbone = torchvision.models.resnet34(pretrained=True, norm_layer=torchvision.ops.FrozenBatchNorm2d)
         backbone = torch.nn.Sequential(*list(backbone.children())[:-3])
@@ -192,7 +192,7 @@ def load_model_and_dataset(args):
         roi_align = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'], output_size=7, sampling_ratio=2)
         rpn_anchor_generator = AnchorGenerator()
         faster_rcnn_model = torchvision.models.detection.FasterRCNN(backbone,
-                                                                    num_classes=21,
+                                                                    num_classes=7,
                                                                     min_size=600,
                                                                     max_size=1000,
                                                                     rpn_anchor_generator=rpn_anchor_generator,
@@ -342,7 +342,7 @@ if __name__ == '__main__':
     parser.add_argument('--config', dest='config_path',
                         default='config/voc.yaml', type=str)
     parser.add_argument('--evaluate', dest='evaluate',
-                        default=False, type=bool)
+                        default=True, type=bool)
     parser.add_argument('--infer_samples', dest='infer_samples',
                         default=True, type=bool)
     parser.add_argument('--use_resnet50_fpn', dest='use_resnet50_fpn',
