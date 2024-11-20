@@ -179,7 +179,7 @@ def load_model_and_dataset(args):
         faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
                                                                                  min_size=600,
                                                                                  max_size=1000,
-                                                                                 box_score_thresh=0.5,
+                                                                                 box_score_thresh=0.22,
         )
         faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
             faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,
@@ -224,7 +224,7 @@ def infer(args):
         os.mkdir(output_dir)
     faster_rcnn_model, voc, test_dataset = load_model_and_dataset(args)
 
-    for sample_count in tqdm(range(10)):
+    for sample_count in tqdm(range(len(test_dataset))):
         random_idx = random.randint(0, len(voc)-1)
         im, target, fname = voc[random_idx]
         im = im.unsqueeze(0).float().to(device)
@@ -233,11 +233,11 @@ def infer(args):
 
         gt_im = cv2.imread(fname)
         gt_im_copy = gt_im.copy()
+
         # Saving images with ground truth boxes
         for idx, box in enumerate(target['bboxes']):
             x1, y1, x2, y2 = box.detach().cpu().numpy()
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-
             cv2.rectangle(gt_im, (x1, y1), (x2, y2), thickness=2, color=[0, 255, 0])
             cv2.rectangle(gt_im_copy, (x1, y1), (x2, y2), thickness=2, color=[0, 255, 0])
             text = voc.idx2label[target['labels'][idx].detach().cpu().item()]
@@ -261,7 +261,6 @@ def infer(args):
 
 
 
-
         # Getting predictions from trained model
         frcnn_output = faster_rcnn_model(im, None)[0]
         boxes = frcnn_output['boxes']
@@ -274,12 +273,12 @@ def infer(args):
 
         # Saving images with predicted boxes
         for idx, box in enumerate(boxes):
+            conf = scores[idx].detach().cpu().item()
             x1, y1, x2, y2 = box.detach().cpu().numpy()
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             cv2.rectangle(im, (x1, y1), (x2, y2), thickness=2, color=[0, 0, 255])
             cv2.rectangle(im_copy, (x1, y1), (x2, y2), thickness=2, color=[0, 0, 255])
-            text = '{} : {:.2f}'.format(voc.idx2label[labels[idx].detach().cpu().item()],
-                                        scores[idx].detach().cpu().item())
+            text = '{} : {:.2f}'.format(voc.idx2label[labels[idx].detach().cpu().item()], conf)
             text_size, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_PLAIN, 1, 1)
             text_w, text_h = text_size
             cv2.rectangle(im_copy, (x1, y1), (x1 + 10 + text_w, y1 + 10 + text_h), [255, 255, 255], -1)
@@ -326,9 +325,12 @@ def evaluate_map(args):
             score = scores[idx].detach().cpu().item()
             label_name = voc.idx2label[label]
             pred_boxes[label_name].append([x1, y1, x2, y2, score])
+
         for idx, box in enumerate(target_boxes):
             x1, y1, x2, y2 = box.detach().cpu().numpy()
             label = target_labels[idx].detach().cpu().item()
+            # if scores is not None:
+            #     score = scores[idx].detach().cpu().item()
             label_name = voc.idx2label[label]
             gt_boxes[label_name].append([x1, y1, x2, y2])
 
