@@ -44,6 +44,8 @@ def train(args):
 
     faster_rcnn_model = FasterRCNN(model_config,
                                    num_classes=dataset_config['num_classes'])
+
+
     faster_rcnn_model.train()
     faster_rcnn_model.to(device)
 

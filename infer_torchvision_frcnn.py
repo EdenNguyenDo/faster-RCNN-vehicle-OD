@@ -7,7 +7,6 @@ import random
 import os
 import yaml
 from tqdm import tqdm
-from FRCNN_model import FasterRCNN
 from dataset.prepareData import VtodDataset
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -230,9 +229,10 @@ def infer(args):
         im, target, fname = voc[random_idx]
         im = im.unsqueeze(0).float().to(device)
 
+
+
         gt_im = cv2.imread(fname)
         gt_im_copy = gt_im.copy()
-
         # Saving images with ground truth boxes
         for idx, box in enumerate(target['bboxes']):
             x1, y1, x2, y2 = box.detach().cpu().numpy()
@@ -259,6 +259,9 @@ def infer(args):
         cv2.addWeighted(gt_im_copy, 0.7, gt_im, 0.3, 0, gt_im)
         cv2.imwrite('{}/output_frcnn_gt_{}.png'.format(output_dir, sample_count), gt_im)
 
+
+
+
         # Getting predictions from trained model
         frcnn_output = faster_rcnn_model(im, None)[0]
         boxes = frcnn_output['boxes']
@@ -266,6 +269,8 @@ def infer(args):
         scores = frcnn_output['scores']
         im = cv2.imread(fname)
         im_copy = im.copy()
+
+
 
         # Saving images with predicted boxes
         for idx, box in enumerate(boxes):
