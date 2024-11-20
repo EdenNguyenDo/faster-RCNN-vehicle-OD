@@ -7,7 +7,7 @@ import os
 import yaml
 from tqdm import tqdm
 from FRCNN_model import FasterRCNN
-from dataset.prepareData import VOCDataset
+from dataset.prepareData import VtodDataset
 from torch.utils.data.dataloader import DataLoader
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -170,7 +170,7 @@ def load_model_and_dataset(args):
     if device == 'cuda':
         torch.cuda.manual_seed_all(seed)
     
-    voc = VOCDataset('test', im_dir=dataset_config['im_test_path'], ann_dir=dataset_config['ann_test_path'])
+    voc = VtodDataset('test', im_dir=dataset_config['im_test_path'], ann_dir=dataset_config['ann_test_path'])
     test_dataset = DataLoader(voc, batch_size=1, shuffle=False)
     
     faster_rcnn_model = FasterRCNN(model_config, num_classes=dataset_config['num_classes'])

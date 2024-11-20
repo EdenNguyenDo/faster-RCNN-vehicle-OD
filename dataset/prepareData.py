@@ -24,7 +24,7 @@ def load_images_and_anns(im_dir, ann_dir, label2idx):
     for ann_file in tqdm(glob.glob(os.path.join(ann_dir, '*.xml'))):
         im_info = {}
         im_info['img_id'] = os.path.basename(ann_file).split('.xml')[0]
-        im_info['filename'] = os.path.join(im_dir, '{}.jpg'.format(im_info['img_id']))
+        im_info['filename'] = os.path.join(im_dir, '{}.png'.format(im_info['img_id']))
         ann_info = ET.parse(ann_file)
         root = ann_info.getroot()
         size = root.find('size')
@@ -53,15 +53,15 @@ def load_images_and_anns(im_dir, ann_dir, label2idx):
     return im_infos
 
 
-class VOCDataset(Dataset):
+class VtodDataset(Dataset):
     def __init__(self, split, im_dir, ann_dir):
         self.split = split
         self.im_dir = im_dir
         self.ann_dir = ann_dir
         classes = [
-            'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep',
+            'wheel', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep',
             'aeroplane', 'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train',
-            'bottle', 'chair', 'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
+            'bottle', 'vehicle type 5', 'vehicle type 1', 'vehicle type 2', 'vehicle type 4', 'vehicle type 3'
         ]
         classes = sorted(classes)
         classes = ['background'] + classes
@@ -75,7 +75,7 @@ class VOCDataset(Dataset):
 
     def __getitem__(self, index):
         im_info = self.images_info[index]
-        im = Image.open(im_info['filename'])
+        im = Image.open(im_info['filename']).convert('RGB')
         to_flip = False
         if self.split == 'train' and random.random() < 0.5:
             to_flip = True

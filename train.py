@@ -6,7 +6,7 @@ import yaml
 import random
 from FRCNN_model import FasterRCNN
 from tqdm import tqdm
-from dataset.prepareData import VOCDataset
+from dataset.prepareData import VtodDataset
 from torch.utils.data.dataloader import DataLoader
 from torch.optim.lr_scheduler import MultiStepLR
 
@@ -34,9 +34,9 @@ def train(args):
     if device == 'cuda':
         torch.cuda.manual_seed_all(seed)
 
-    voc = VOCDataset('train',
-                     im_dir=dataset_config['im_train_path'],
-                     ann_dir=dataset_config['ann_train_path'])
+    voc = VtodDataset('train',
+                      im_dir=dataset_config['im_train_path'],
+                      ann_dir=dataset_config['ann_train_path'])
     train_dataset = DataLoader(voc,
                                batch_size=1,
                                shuffle=True,

@@ -6,7 +6,7 @@ import yaml
 import random
 from tqdm import tqdm
 import torchvision
-from dataset.prepareData import VOCDataset
+from dataset.prepareData import VtodDataset
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.anchor_utils import AnchorGenerator
@@ -38,17 +38,17 @@ def train(args):
     if device == 'cuda':
         torch.cuda.manual_seed_all(seed)
 
-    voc = VOCDataset('train',
-                     im_dir=dataset_config['im_train_path'],
-                     ann_dir=dataset_config['ann_train_path'])
+    voc = VtodDataset('train',
+                      im_dir=dataset_config['im_train_path'],
+                      ann_dir=dataset_config['ann_train_path'])
 
     train_dataset = DataLoader(voc,
-                               batch_size=4,
+                               batch_size=1,
                                shuffle=True,
                                num_workers=4,
                                collate_fn=collate_function)
 
-    if args.use_resnet50_fpn:
+    if args.use_resnet50_fpn: # Fine tune
         faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
                                                                                  min_size=600,
                                                                                  max_size=1000,
@@ -56,7 +56,7 @@ def train(args):
         faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
             faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,
             num_classes=21)
-    else:
+    else: # Plugin components and train a custom dataset.
         backbone = torchvision.models.resnet34(pretrained=True, norm_layer=torchvision.ops.FrozenBatchNorm2d)
         backbone = torch.nn.Sequential(*list(backbone.children())[:-3])
         backbone.out_channels = 256

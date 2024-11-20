@@ -8,7 +8,7 @@ import os
 import yaml
 from tqdm import tqdm
 from FRCNN_model import FasterRCNN
-from dataset.prepareData import VOCDataset
+from dataset.prepareData import VtodDataset
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.anchor_utils import AnchorGenerator
@@ -173,14 +173,14 @@ def load_model_and_dataset(args):
     if device == 'cuda':
         torch.cuda.manual_seed_all(seed)
 
-    voc = VOCDataset('test', im_dir=dataset_config['im_test_path'], ann_dir=dataset_config['ann_test_path'])
+    voc = VtodDataset('test', im_dir=dataset_config['im_test_path'], ann_dir=dataset_config['ann_test_path'])
     test_dataset = DataLoader(voc, batch_size=1, shuffle=False)
 
     if args.use_resnet50_fpn:
         faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
                                                                                  min_size=600,
                                                                                  max_size=1000,
-                                                                                 box_score_thresh=0.7,
+                                                                                 box_score_thresh=0.5,
         )
         faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
             faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,
@@ -226,7 +226,7 @@ def infer(args):
     faster_rcnn_model, voc, test_dataset = load_model_and_dataset(args)
 
     for sample_count in tqdm(range(10)):
-        random_idx = random.randint(0, len(voc))
+        random_idx = random.randint(0, len(voc)-1)
         im, target, fname = voc[random_idx]
         im = im.unsqueeze(0).float().to(device)
 

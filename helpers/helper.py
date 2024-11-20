@@ -70,8 +70,7 @@ class Helper:
         :param anchors_or_proposals: (num_anchors_or_proposals, 4)
         :return pred_boxes: (num_anchors_or_proposals, num_classes, 4)
         """
-        box_transform_pred = box_transform_pred.reshape(
-            box_transform_pred.size(0), -1, 4)
+        box_transform_pred = box_transform_pred.reshape(box_transform_pred.size(0), -1, 4)
 
         # Get cx, cy, w, h from x1,y1,x2,y2
         w = anchors_or_proposals[:, 2] - anchors_or_proposals[:, 0]
