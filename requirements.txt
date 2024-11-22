@@ -1,0 +1,9 @@
+torch
+torchvision
+pillow
+tqdm
+opencv-python
+numpy
+PyYAML
+matplotlib
+deep_sort_realtime
