@@ -119,5 +119,5 @@ def convert_jsonl_to_voc(jsonl_file, output_dir):
 
 # Usage
 jsonl_file = 'annotation.jsonl'  # Replace with the path to your JSONL file
-output_dir = 'dataset/valid'  # Replace with your desired output directory
+output_dir = '../dataset/valid'  # Replace with your desired output directory
 convert_jsonl_to_voc(jsonl_file, output_dir)
