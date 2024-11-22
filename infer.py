@@ -6,7 +6,7 @@ import random
 import os
 import yaml
 from tqdm import tqdm
-from FRCNN_model import FasterRCNN
+from components.FRCNN_model import FasterRCNN
 from dataset.prepareData import VtodDataset
 from torch.utils.data.dataloader import DataLoader
 
