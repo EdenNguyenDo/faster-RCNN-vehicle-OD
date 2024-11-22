@@ -78,7 +78,6 @@ def infer_video(args):
                 actual_center_y = (bbox[1] + bbox[3]) / 2
 
 
-
                 # Add actual and predicted positions to their respective lists
                 actual_trajectories[object_id].append({
                     'frame': frame_count,

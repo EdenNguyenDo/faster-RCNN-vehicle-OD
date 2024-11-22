@@ -1,13 +1,13 @@
 import torchvision
 import cv2
-import torch
+from torchvision import transforms as T
 import numpy as np
 import matplotlib.pyplot as plt
 
 ################################################################################
 
 # create a model object from the keypointrcnn_resnet50_fpn class
-model = torchvision.models.detection.keypointrcnn_resnet50_fpn(pretrained=True)
+model = torchvision.models.detection.keypointrcnn_resnet50_fpn(pretrained=True, num_keypoints=17, min_size=800)
 # call the eval() method to prepare the model for inference mode.
 model.eval()
 
@@ -20,10 +20,10 @@ keypoints = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_sho
 
 
 # import the transforms module
-from torchvision import transforms as T
+
 
 # Read the image using opencv
-img_path = "input_videos/person.jpg"
+img_path = "../input_videos/person.jpg"
 img = cv2.imread(img_path)
 
 # preprocess the input image
@@ -61,7 +61,7 @@ def draw_keypoints_per_person(img, all_keypoints, all_scores, confs, keypoint_th
                     # pick the color at the specific color-id
                     color = tuple(np.asarray(cmap(color_id[person_id])[:-1]) * 255)
                     # draw a cirle over the keypoint location
-                    cv2.circle(img_copy, keypoint, 30, color, -1)
+                    cv2.circle(img_copy, keypoint, 10, color, -1)
 
     return img_copy
 
@@ -125,15 +125,15 @@ def draw_skeleton_per_person(img, all_keypoints, all_scores, confs, keypoint_thr
                         # pick the color at a specific color-id
                         color = tuple(np.asarray(cmap(colors[person_id])[:-1]) * 255)
                         # draw the line for the limb
-                        cv2.line(img_copy, tuple(limb_loc1), tuple(limb_loc2), color, 25)
+                        cv2.line(img_copy, tuple(limb_loc1), tuple(limb_loc2), color, 8)
 
     return img_copy
 
 
 keypoints_img = draw_keypoints_per_person(img, output["keypoints"], output["keypoints_scores"], output["scores"],
                                           keypoint_threshold=2)
-cv2.imwrite("output_test/keypoints-img.jpg", keypoints_img)
+cv2.imwrite("../output_test/keypoints-img.jpg", keypoints_img)
 
 skeletal_img = draw_skeleton_per_person(img, output["keypoints"], output["keypoints_scores"], output["scores"],
                                         keypoint_threshold=2)
-cv2.imwrite("output_test/skeleton-img.jpg", skeletal_img)
+cv2.imwrite("../output_test/skeleton-img.jpg", skeletal_img)

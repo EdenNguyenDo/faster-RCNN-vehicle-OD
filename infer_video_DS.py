@@ -25,18 +25,15 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from helpers.helper import Helper
-from coco_classes import COCO_91_CLASSES
-import yaml
+from deepSORT.coco_classes import COCO_91_CLASSES
+
+np.random.seed(3101)
 
 
-
-
-np.random.seed(42)
-OUT_DIR = 'output_videos'
+OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
-
 
 
 def load_model():
