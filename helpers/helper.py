@@ -177,6 +177,13 @@ class Helper:
 
     # Define a function to convert detections to SORT format.
     def convert_detections(detections, threshold, classes):
+        """
+        This method convert model output to the annotation format usable with Deep SORT
+
+        :param threshold:
+        :param classes:
+        :return: final_boxes: Detection to be used with deep sort
+        """
         # Get the bounding boxes, labels and scores from the detections dictionary.
         boxes = detections["boxes"].cpu().numpy()
         labels = detections["labels"].cpu().numpy()
@@ -205,6 +212,16 @@ class Helper:
 
     # Function for bounding box and ID annotation.
     def annotate(tracks, frame, resized_frame, frame_width, frame_height, colors):
+        """
+        Method to annotate each frame by Deep SORT.
+
+        :param frame:
+        :param resized_frame:
+        :param frame_width:
+        :param frame_height:
+        :param colors:
+        :return:
+        """
         for track in tracks:
             if not track.is_confirmed():
                 continue

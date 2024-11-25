@@ -1,3 +1,7 @@
+"""
+This script allows user to run inference with custom-trained Faster R-CNN model with vgg16 backbones (not fine-tuning)
+"""
+
 import torch
 import numpy as np
 import cv2

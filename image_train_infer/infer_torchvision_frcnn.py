@@ -1,3 +1,7 @@
+"""
+This script allows user to run inference with fine-tuned faster R-CNN model
+"""
+
 import torch
 import numpy as np
 import cv2

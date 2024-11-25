@@ -1,3 +1,7 @@
+"""
+This script trains the  Faster R-CNN model with vgg16 backbones from scratch with custom data (not fine-tuning)
+"""
+
 import torch
 import argparse
 import os

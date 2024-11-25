@@ -1,3 +1,7 @@
+"""
+This script allows user to train fine-tuned faster R-CNN model with backbones and pre-defined components
+"""
+
 import torch
 import argparse
 import os

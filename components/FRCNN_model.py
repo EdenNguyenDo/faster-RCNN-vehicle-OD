@@ -1,3 +1,8 @@
+"""
+Raw built version of Faster R-CNN using components made from scratch with vgg16 backbone.
+"""
+
+
 import torch
 import torch.nn as nn
 import torchvision
