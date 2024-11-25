@@ -1,8 +1,8 @@
 dataset_params:
-  im_train_path: 'dataset/train/train_images'
-  ann_train_path: 'dataset/train/train_annotations'
-  im_test_path: 'dataset/valid/valid_images'
-  ann_test_path: 'dataset/valid/valid_annotations'
+  im_train_path: '../dataset/train/train_images'
+  ann_train_path: '../dataset/train/train_annotations'
+  im_test_path: '../dataset/valid/valid_images'
+  ann_test_path: '../dataset/valid/valid_annotations'
   num_classes : 7
 
 model_params:

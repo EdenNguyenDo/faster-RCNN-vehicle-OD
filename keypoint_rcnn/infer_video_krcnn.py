@@ -10,7 +10,7 @@ from infer_image_krcnn import get_model
 
 # construct the argument parser to parse the command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input', required=True,
+parser.add_argument('-i', '--input', default='../input_videos/mvmhat_1_1.mp4',
                     help='path to the input data')
 parser.add_argument('-m', '--min-size', dest='min_size', default=800,
                     help='path to the input data')
@@ -24,7 +24,7 @@ transform = transforms.Compose([
 
 # set the computation device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# load the modle on to the computation device and set to eval mode
+# load the model on to the computation device and set to eval mode
 model = get_model(min_size=args['min_size']).to(device).eval()
 
 cap = cv2.VideoCapture(args['input'])
@@ -77,13 +77,13 @@ while (cap.isOpened()):
     else:
         break
 
-    # release VideoCapture()
-    cap.release()
-    # close all frames and video windows
-    cv2.destroyAllWindows()
-    # calculate and print the average FPS
-    avg_fps = total_fps / frame_count
-    print(f"Average FPS: {avg_fps:.3f}")
+# release VideoCapture()
+cap.release()
+# close all frames and video windows
+cv2.destroyAllWindows()
+# calculate and print the average FPS
+avg_fps = total_fps / frame_count
+print(f"Average FPS: {avg_fps:.3f}")
 
 
 

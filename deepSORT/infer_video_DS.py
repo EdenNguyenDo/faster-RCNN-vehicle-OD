@@ -183,7 +183,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
     parser.add_argument(
         '--input_videos',
-        default='input_videos/vid2.mp4',
+        default='../input_videos/vid2.mp4',
         help='path to input video',
     )
     parser.add_argument(

@@ -21,7 +21,7 @@ import cv2
 import os
 import time
 import argparse
-from standardize_detections import standardize_format
+from standardize_detections import standardize_to_txt, standardize_to_xml
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from deep_sort_realtime.deepsort_tracker import DeepSort
@@ -108,7 +108,6 @@ def infer_video(args):
             # Convert frame to tensor and send it to device (cpu or cuda).
             frame_tensor = ToTensor()(resized_frame).to(device)
 
-            start_time = time.time()
             # Feed frame to model and get detections.
             det_start_time = time.time()
             with torch.no_grad():
@@ -118,8 +117,8 @@ def infer_video(args):
             det_fps = 1 / (det_end_time - det_start_time)
 
             # Saved annotated vehicles from the image.
-            standardize_format(detections, args.cls, args.threshold, frame_count, save_name)
-
+            standardize_to_txt(detections, args.cls, args.threshold, frame_count, save_name)
+            standardize_to_xml(detections, args.cls, frame_count, save_name, frame_width, frame_height)
             frame_count += 1
 
             print(f"Frame {frame_count}/{frames}",
