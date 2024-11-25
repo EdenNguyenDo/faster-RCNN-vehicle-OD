@@ -122,7 +122,7 @@ def train(args):
             torch.save(faster_rcnn_model.state_dict(), os.path.join(train_config['task_name'],
                                                                     'tv_frcnn_r50fpn_' + train_config['ckpt_name']))
         else:
-            torch.save(faster_rcnn_model.state_dict(), os.path.join('../vtod2',
+            torch.save(faster_rcnn_model.state_dict(), os.path.join('../vtod',
                                                                     'tv_frcnn_' + train_config['ckpt_name']))
         loss_output = ''
         loss_output += 'RPN Classification Loss : {:.4f}'.format(np.mean(rpn_classification_losses))
@@ -136,7 +136,7 @@ def train(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for faster rcnn using torchvision code training')
     parser.add_argument('--config', dest='config_path',
-                        default='../config/voc.yaml', type=str)
+                        default='../config/model_config.yaml', type=str)
     parser.add_argument('--use_resnet50_fpn', dest='use_resnet50_fpn',
                          default=False, type=bool)
     args = parser.parse_args()

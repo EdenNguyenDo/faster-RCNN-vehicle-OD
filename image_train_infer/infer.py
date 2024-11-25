@@ -310,7 +310,7 @@ def evaluate_map(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for faster rcnn inference')
     parser.add_argument('--config', dest='config_path',
-                        default='config/voc.yaml', type=str)
+                        default='config/model_config.yaml', type=str)
     parser.add_argument('--evaluate', dest='evaluate',
                         default=False, type=bool)
     parser.add_argument('--infer_samples', dest='infer_samples',

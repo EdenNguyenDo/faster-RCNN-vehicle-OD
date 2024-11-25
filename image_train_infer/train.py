@@ -111,6 +111,6 @@ def train(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for faster rcnn training')
     parser.add_argument('--config', dest='config_path',
-                        default='config/voc.yaml', type=str)
+                        default='config/model_config.yaml', type=str)
     args = parser.parse_args()
     train(args)
