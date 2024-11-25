@@ -21,6 +21,7 @@ import cv2
 import os
 import time
 import argparse
+from standardize_detections import standardize_format
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from deep_sort_realtime.deepsort_tracker import DeepSort
@@ -81,8 +82,8 @@ def infer_video(args):
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    # save_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0]
-    save_name = "inferred_video"
+    save_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
+    #save_name = "inferred_video"
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
         f"{OUT_DIR}/{save_name}_{args.pretrained_model}_{args.embedder}.mp4",
@@ -116,49 +117,17 @@ def infer_video(args):
 
             det_fps = 1 / (det_end_time - det_start_time)
 
+            # Saved annotated vehicles from the image.
+            standardize_format(detections, args.cls, args.threshold, frame_count, save_name)
 
-
-
-            # Convert detections to Deep SORT format.
-            detections = Helper.convert_detections(detections, args.threshold, args.cls)
-
-
-
-            print(detections)
-
-            # Update tracker with detections.
-            track_start_time = time.time()
-            tracks = tracker.update_tracks(detections, frame=frame)
-
-            time.sleep(0.1)
-
-            track_end_time = time.time()
-            track_fps = 1 / (track_end_time - track_start_time)
-
-            end_time = time.time()
-            fps = 1 / (end_time - start_time)
-            # Add `fps` to `total_fps`.
-            total_fps += fps
-            # Increment frame count.
             frame_count += 1
 
             print(f"Frame {frame_count}/{frames}",
-                  f"Detection FPS: {det_fps:.1f},",
-                  f"Tracking FPS: {track_fps:.1f}, Total FPS: {fps:.1f}")
+                    f"Detection FPS: {det_fps:.1f}")
 
-            # Draw bounding boxes and labels on frame.
-            if len(tracks) > 0:
-                frame = Helper.annotate(
-                    tracks,
-                    frame,
-                    resized_frame,
-                    frame_width,
-                    frame_height,
-                    COLORS
-                )
             cv2.putText(
                 frame,
-                f"FPS: {fps:.1f}",
+                f"FPS: {det_fps:.1f}",
                 (int(20), int(40)),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=1,
