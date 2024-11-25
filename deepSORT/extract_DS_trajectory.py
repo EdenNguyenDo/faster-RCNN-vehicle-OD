@@ -1,3 +1,5 @@
+"""This file help extract the trajectory by deep SORT through each frame"""
+
 import argparse
 from collections import defaultdict
 
