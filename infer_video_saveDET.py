@@ -1,18 +1,8 @@
 """
-Deep SORT with various object detection models.
+Running inference with faster R-CNN model
 
-USAGE:
-python deep_sort_tracking.py 
-python deep_sort_tracking.py --threshold 0.5 --imgsz 320
-python deep_sort_tracking.py --threshold 0.5 --model fasterrcnn_resnet50_fpn_v2
-                                                     fasterrcnn_resnet50_fpn
-                                                     fasterrcnn_mobilenet_v3_large_fpn
-                                                     fasterrcnn_mobilenet_v3_large_320_fpn
-                                                     fcos_resnet50_fpn
-                                                     ssd300_vgg16
-                                                     ssdlite320_mobilenet_v3_large
-                                                     retinanet_resnet50_fpn
-                                                     retinanet_resnet50_fpn_v2
+This script run inference with video and save annotated video while saving the model output for each frame into
+a different format for other purposes
 """
 import numpy as np
 import torch
@@ -37,6 +27,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 
 
+"""
+This function load model faster R-CNN with trained weight file
+"""
 def load_model():
     faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
                                                                              min_size=600,
@@ -51,16 +44,17 @@ def load_model():
     faster_rcnn_model.to(device)
 
     faster_rcnn_model.load_state_dict(torch.load(
-        'vtod//tv_frcnn_r50fpn_faster_rcnn_vtod.pth',
+        '../vtod/tv_frcnn_r50fpn_faster_rcnn_vtod.pth',
         map_location=device))
 
     return faster_rcnn_model
 
 
-def set_tracker(args):
-    return DeepSort(max_age= args.max_age, embedder=args.embedder)
+"""
+This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
+Then each individual frame is aggregated to create an annotated video
 
-
+"""
 def infer_video(args):
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.cls]}")
     print(f"Detector: {args.pretrained_model}")
@@ -73,8 +67,6 @@ def infer_video(args):
     # Set model to evaluation mode.
     model.eval().to(device)
 
-    # Initialize a SORT tracker object.
-    tracker = set_tracker(args)
 
     VIDEO_PATH = args.input_videos
     cap = cv2.VideoCapture(VIDEO_PATH)
@@ -83,7 +75,7 @@ def infer_video(args):
     frame_fps = int(cap.get(5))
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     save_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
-    #save_name = "inferred_video"
+
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
         f"{OUT_DIR}/{save_name}_{args.pretrained_model}_{args.embedder}.mp4",
@@ -119,6 +111,7 @@ def infer_video(args):
             # Saved annotated vehicles from the image.
             standardize_to_txt(detections, args.cls, args.threshold, frame_count, save_name)
             standardize_to_xml(detections, args.cls, frame_count, save_name, frame_width, frame_height)
+
             frame_count += 1
 
             print(f"Frame {frame_count}/{frames}",

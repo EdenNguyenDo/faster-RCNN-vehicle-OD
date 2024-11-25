@@ -1,7 +1,9 @@
-# {'bbox : [int(x), y, w, h]',
-#  'conf': float('4 decimal'),
-# 'class':'3'}
-import os
+"""
+This file contains methods for converting output data of the faster R-CNN of the model to text file and xml file
+
+XML annotations for training purpose
+
+"""
 from xml.dom import minidom
 
 import numpy as np
@@ -12,6 +14,12 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom.minidom import parseString
 
 
+"""
+This method convert the output of the model to text format in the format of
+class x_center y_center width height confidence
+
+Note: the coordinates have not yet been normalised
+"""
 def standardize_to_txt(detections, classes, threshold, frame_no, vid_name):
     boxes = detections["boxes"].cpu().numpy()
     labels = detections["labels"].cpu().numpy()
@@ -47,6 +55,13 @@ def standardize_to_txt(detections, classes, threshold, frame_no, vid_name):
             f.write(f"{class_name} {x_center} {y_center} {width} {height} {confidence}\n")
 
 
+
+
+"""
+This method convert the output of the model to xml format for training data.
+
+Note: the coordinates have not yet been normalised.
+"""
 def standardize_to_xml(detections, classes, frame_no, vid_name, width, height):
     # Function to convert detection results to XML format
     # Extract boxes, labels, and scores from the detection dictionary
@@ -122,7 +137,7 @@ def standardize_to_xml(detections, classes, frame_no, vid_name, width, height):
     # Ensure the output directory exists
 
     # Save the XML file
-    filename = f"{vid_name}_frame_{frame_no}.xml"
+    filename = f"{vid_name}_{frame_no}.xml"
     file_path = os.path.join('bounding_box_annotations/bbox_xml_file/', filename)
 
     xml_str = minidom.parseString(ET.tostring(annotation)).toprettyxml(indent="     ")

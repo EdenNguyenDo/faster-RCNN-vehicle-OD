@@ -6,6 +6,9 @@ import time
 from PIL import Image
 from torchvision.transforms import transforms as transforms
 from infer_image_krcnn import get_model
+from deep_sort_realtime.deepsort_tracker import DeepSort
+from deepSORT.coco_classes import COCO_91_CLASSES
+from helpers.helper import Helper
 
 
 # construct the argument parser to parse the command line arguments
@@ -15,6 +18,8 @@ parser.add_argument('-i', '--input', default='../input_videos/mvmhat_1_1.mp4',
 parser.add_argument('-m', '--min-size', dest='min_size', default=800,
                     help='path to the input data')
 args = vars(parser.parse_args())
+
+tracker = DeepSort(30)
 
 
 # transform to convert the image to tensor
@@ -66,6 +71,8 @@ while (cap.isOpened()):
         fps = 1 / (end_time - start_time)
         # add fps to total fps
         total_fps += fps
+
+
         # increment frame count
         frame_count += 1
         wait_time = max(1, int(fps / 4))
