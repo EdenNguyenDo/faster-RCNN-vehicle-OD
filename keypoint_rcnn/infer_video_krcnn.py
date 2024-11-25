@@ -1,26 +1,18 @@
 import torch
-import numpy as np
 import cv2
 import argparse
 import utils_krcnn
+import time
 from PIL import Image
 from torchvision.transforms import transforms as transforms
-import torchvision
-
-
-
-def get_model(min_size=800):
-    # initialize the model
-    model = torchvision.models.detection.keypointrcnn_resnet50_fpn(pretrained=True,
-                                                                   num_keypoints=17,
-                                                                   min_size=min_size)
-    return model
+from infer_image_krcnn import get_model
 
 
 # construct the argument parser to parse the command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input',
-                    default='../input_videos/person.jpg',
+parser.add_argument('-i', '--input', required=True,
+                    help='path to the input data')
+parser.add_argument('-m', '--min-size', dest='min_size', default=800,
                     help='path to the input data')
 args = vars(parser.parse_args())
 
@@ -33,33 +25,76 @@ transform = transforms.Compose([
 # set the computation device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # load the modle on to the computation device and set to eval mode
-model = get_model().to(device).eval()
+model = get_model(min_size=args['min_size']).to(device).eval()
 
-
-image_path = args['input']
-image = Image.open(image_path).convert('RGB')
-# NumPy copy of the image for OpenCV functions
-orig_numpy = np.array(image, dtype=np.float32)
-# convert the NumPy image to OpenCV BGR format
-orig_numpy = cv2.cvtColor(orig_numpy, cv2.COLOR_RGB2BGR) / 255.
-# transform the image
-image = transform(image)
-# add a batch dimension
-image = image.unsqueeze(0).to(device)
-# get the detections, forward pass the image through the model
-
-with torch.no_grad():
-    outputs = model(image)
-# draw the keypoints, lines, and bounding boxes
-output_image = utils_krcnn.draw_keypoints_and_boxes(outputs, orig_numpy)
-
-
-# visualize the image
-cv2.imshow('Keypoint image', output_image)
-cv2.waitKey(0)
+cap = cv2.VideoCapture(args['input'])
+if (cap.isOpened() == False):
+    print('Error while trying to read video. Please check path again')
+# get the video frames' width and height
+frame_width = int(cap.get(3))
+frame_height = int(cap.get(4))
 # set the save path
-save_path = f"../output_krcnn/{args['input'].split('/')[-1].split('.')[0]}.jpg"
-cv2.imwrite(save_path, output_image*255.)
+save_path = f"../outputs/{args['input'].split('/')[-1].split('.')[0]}_{args['min_size']}.mp4"
+# define codec and create VideoWriter object
+out = cv2.VideoWriter(save_path,
+                      cv2.VideoWriter_fourcc(*'mp4v'), 20,
+                      (frame_width, frame_height))
+frame_count = 0 # to count total frames
+total_fps = 0 # to get the final frames per second
+
+# read until end of video
+while (cap.isOpened()):
+    # capture each frame of the video
+    ret, frame = cap.read()
+    if ret == True:
+
+        pil_image = Image.fromarray(frame).convert('RGB')
+        orig_frame = frame
+        # transform the image
+        image = transform(pil_image)
+        # add a batch dimension
+        image = image.unsqueeze(0).to(device)
+        # get the start time
+        start_time = time.time()
+        # get the detections, forward pass the frame through the model
+        with torch.no_grad():
+            outputs = model(image)
+        # get the end time
+        end_time = time.time()
+        output_image = utils_krcnn.draw_keypoints_and_boxes(outputs, orig_frame)
+        # get the fps
+        fps = 1 / (end_time - start_time)
+        # add fps to total fps
+        total_fps += fps
+        # increment frame count
+        frame_count += 1
+        wait_time = max(1, int(fps / 4))
+        cv2.imshow('Pose detection frame', output_image)
+        out.write(output_image)
+        # press `q` to exit
+        if cv2.waitKey(wait_time) & 0xFF == ord('q'):
+            break
+    else:
+        break
+
+    # release VideoCapture()
+    cap.release()
+    # close all frames and video windows
+    cv2.destroyAllWindows()
+    # calculate and print the average FPS
+    avg_fps = total_fps / frame_count
+    print(f"Average FPS: {avg_fps:.3f}")
+
+
+
+
+
+
+
+
+
+
+
 
 
 

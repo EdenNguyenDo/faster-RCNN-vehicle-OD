@@ -35,9 +35,10 @@ def draw_keypoints_and_boxes(outputs, image):
                 ])
                 rgb = rgb*255
                 # join the keypoint pairs to draw the skeletal structure
-                cv2.line(image, (keypoints[e, 0][0], keypoints[e, 1][0]),
-                        (keypoints[e, 0][1], keypoints[e, 1][1]),
-                        tuple(rgb), 2, lineType=cv2.LINE_AA)
+                # join the keypoint pairs to draw the skeletal structure
+                pt1 = (int(keypoints[e[0], 0]), int(keypoints[e[0], 1]))
+                pt2 = (int(keypoints[e[1], 0]), int(keypoints[e[1], 1]))
+                cv2.line(image, pt1, pt2, tuple(rgb), 2, lineType=cv2.LINE_AA)
             # draw the bounding boxes around the objects
             cv2.rectangle(image, (int(boxes[0]), int(boxes[1])), (int(boxes[2]), int(boxes[3])),
                           color=(0, 255, 0),

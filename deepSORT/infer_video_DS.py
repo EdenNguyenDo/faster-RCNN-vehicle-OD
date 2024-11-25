@@ -14,13 +14,13 @@ python deep_sort_tracking.py --threshold 0.5 --model fasterrcnn_resnet50_fpn_v2
                                                      retinanet_resnet50_fpn
                                                      retinanet_resnet50_fpn_v2
 """
+import numpy as np
 import torch
 import torchvision
 import cv2
 import os
 import time
 import argparse
-import numpy as np
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from deep_sort_realtime.deepsort_tracker import DeepSort
@@ -118,6 +118,8 @@ def infer_video(args):
 
             # Convert detections to Deep SORT format.
             detections = Helper.convert_detections(detections, args.threshold, args.cls)
+
+            print(detections)
 
             # Update tracker with detections.
             track_start_time = time.time()

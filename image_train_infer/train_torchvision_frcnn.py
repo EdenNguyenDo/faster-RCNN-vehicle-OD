@@ -43,15 +43,15 @@ def train(args):
                       ann_dir=dataset_config['ann_train_path'])
 
     train_dataset = DataLoader(voc,
-                               batch_size=1,
+                               batch_size=10,
                                shuffle=True,
-                               num_workers=4,
+                               num_workers=8,
                                collate_fn=collate_function)
 
     if args.use_resnet50_fpn: # Fine tune
         faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
-                                                                                 min_size=600,
-                                                                                 max_size=1000,
+                                                                                 min_size=1000,
+                                                                                 max_size=1400,
         )
         faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
             faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,

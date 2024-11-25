@@ -217,7 +217,7 @@ def load_model_and_dataset(args):
 
 def infer(args):
     if args.use_resnet50_fpn:
-        output_dir = 'samples_tv_r50fpn'
+        output_dir = '../samples_tv_r50fpn'
     else:
         output_dir = 'samples_tv'
     if not os.path.exists(output_dir):
