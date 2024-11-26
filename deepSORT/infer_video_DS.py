@@ -119,7 +119,6 @@ def infer_video(args):
             # Convert detections to Deep SORT format.
             detections = Helper.convert_detections(detections, args.threshold, args.cls)
 
-            print(detections)
 
             # Update tracker with detections.
             track_start_time = time.time()
@@ -183,7 +182,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
     parser.add_argument(
         '--input_videos',
-        default='../input_videos/vid2.mp4',
+        default='../input_videos/2024_0323_120137_100A.MP4',
         help='path to input video',
     )
     parser.add_argument(
@@ -245,7 +244,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cls',
         nargs='+',
-        default=[3],
+        default=[3, 6, 8],
         help='which classes to track',
         type=int
     )

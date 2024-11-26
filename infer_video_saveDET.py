@@ -5,6 +5,7 @@ import cv2
 import os
 import time
 import argparse
+from plot_bbox import draw_boxes
 from standardize_detections import standardize_to_txt, standardize_to_xml
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
@@ -88,7 +89,7 @@ def infer_video(args):
     frame_count = 0  # To count total frames.
 
     # # Get the video's FPS (frames per second)
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    # fps = cap.get(cv2.CAP_PROP_FPS)
     #
     # # Set the frame interval to capture one frame every 5 seconds
     # frame_interval = int(fps * 3)  # For 30 FPS, this equals 90 frames being skipped before one is saved
@@ -119,8 +120,11 @@ def infer_video(args):
         with torch.no_grad():
             detections = model([frame_tensor])[0]
         det_end_time = time.time()
-
         det_fps = 1 / (det_end_time - det_start_time)
+
+
+        #Plot bounding boxes
+        draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
         standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
@@ -165,7 +169,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
     parser.add_argument(
         '--input_videos',
-        default="D:/projects/1705591913860/014-20214/2024_0323_120137_100A.MP4",
+        default="input_videos/vid2.mp4",
         help='path to input video',
     )
     parser.add_argument(
