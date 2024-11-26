@@ -11,11 +11,12 @@ import cv2
 import os
 import time
 import argparse
+
 from standardize_detections import standardize_to_txt, standardize_to_xml
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from deep_sort_realtime.deepsort_tracker import DeepSort
-from helpers.helper import Helper
+from helpers.extract_frame import extract_frame
 from deepSORT.coco_classes import COCO_91_CLASSES
 
 np.random.seed(3101)
@@ -74,21 +75,26 @@ def infer_video(args):
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    save_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
+    video_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
+    saved_frame_dir = 'inference_dataset/images/'
 
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
-        f"{OUT_DIR}/{save_name}_{args.pretrained_model}_{args.embedder}.mp4",
+        f"{OUT_DIR}/{video_name}_{args.pretrained_model}_{args.embedder}.mp4",
         cv2.VideoWriter_fourcc(*'mp4v'), frame_fps,
         (frame_width, frame_height)
     )
 
     frame_count = 0  # To count total frames.
-    total_fps = 0  # To get the final frames per second.
+
+    cap.set(cv2.CAP_PROP_FPS, 5)
+
 
     while cap.isOpened():
+
         # Read a frame
         ret, frame = cap.read()
+
         if ret:
             if args.imgsz != None:
                 resized_frame = cv2.resize(
@@ -109,8 +115,9 @@ def infer_video(args):
             det_fps = 1 / (det_end_time - det_start_time)
 
             # Saved annotated vehicles from the image.
-            standardize_to_txt(detections, args.cls, args.threshold, frame_count, save_name)
-            standardize_to_xml(detections, args.cls, frame_count, save_name, frame_width, frame_height)
+            standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
+            standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
+            extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
             frame_count += 1
 

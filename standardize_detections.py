@@ -13,6 +13,7 @@ from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom.minidom import parseString
 
+saved_annotation_folder = 'inference_dataset/annotations'
 
 """
 This method convert the output of the model to text format in the format of
@@ -137,16 +138,18 @@ def standardize_to_xml(detections, classes, frame_no, vid_name, width, height):
     # Ensure the output directory exists
 
     # Save the XML file
+    output_dir = os.path.join(saved_annotation_folder, vid_name)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     filename = f"{vid_name}_{frame_no}.xml"
-    file_path = os.path.join('bounding_box_annotations/bbox_xml_file/', filename)
+    file_path = os.path.join(output_dir, filename)
 
     xml_str = minidom.parseString(ET.tostring(annotation)).toprettyxml(indent="     ")
-
 
     # Write the pretty-printed XML to file
     with open(file_path, "w") as xml_file:
         xml_file.write(xml_str)
-
 
     print(f"XML saved to {file_path}")
 
