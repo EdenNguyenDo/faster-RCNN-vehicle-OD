@@ -1,9 +1,3 @@
-"""
-Running inference with faster R-CNN model
-
-This script run inference with video and save annotated video while saving the model output for each frame into
-a different format for other purposes
-"""
 import numpy as np
 import torch
 import torchvision
@@ -11,13 +5,19 @@ import cv2
 import os
 import time
 import argparse
-
 from standardize_detections import standardize_to_txt, standardize_to_xml
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
-from deep_sort_realtime.deepsort_tracker import DeepSort
 from helpers.extract_frame import extract_frame
 from deepSORT.coco_classes import COCO_91_CLASSES
+"""
+Running inference with faster R-CNN model
+
+This script run inference with video and save annotated video while saving the model output for each frame into
+a different format for other purposes
+"""
+
+
 
 np.random.seed(3101)
 
@@ -87,7 +87,11 @@ def infer_video(args):
 
     frame_count = 0  # To count total frames.
 
-    cap.set(cv2.CAP_PROP_FPS, 5)
+    # # Get the video's FPS (frames per second)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    #
+    # # Set the frame interval to capture one frame every 5 seconds
+    # frame_interval = int(fps * 3)  # For 30 FPS, this equals 90 frames being skipped before one is saved
 
 
     while cap.isOpened():
@@ -95,56 +99,61 @@ def infer_video(args):
         # Read a frame
         ret, frame = cap.read()
 
-        if ret:
-            if args.imgsz != None:
-                resized_frame = cv2.resize(
-                    cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
-                    (args.imgsz, args.imgsz)
-                )
-            else:
-                resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # Convert frame to tensor and send it to device (cpu or cuda).
-            frame_tensor = ToTensor()(resized_frame).to(device)
-
-            # Feed frame to model and get detections.
-            det_start_time = time.time()
-            with torch.no_grad():
-                detections = model([frame_tensor])[0]
-            det_end_time = time.time()
-
-            det_fps = 1 / (det_end_time - det_start_time)
-
-            # Saved annotated vehicles from the image.
-            standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
-            standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
-            extract_frame(saved_frame_dir, frame, frame_count, video_name)
-
-            frame_count += 1
-
-            print(f"Frame {frame_count}/{frames}",
-                    f"Detection FPS: {det_fps:.1f}")
-
-            cv2.putText(
-                frame,
-                f"FPS: {det_fps:.1f}",
-                (int(20), int(40)),
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=1,
-                color=(0, 0, 255),
-                thickness=2,
-                lineType=cv2.LINE_AA
-            )
-
-            out.write(frame)
-
-            if args.show:
-                # Display or save output frame.
-                cv2.imshow("Output", frame)
-                # Press q to quit.
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-        else:
+        if not ret:
             break
+
+        # if frame_count % frame_interval ==0:
+
+        if args.imgsz is not None:
+            resized_frame = cv2.resize(
+                cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
+                (args.imgsz, args.imgsz)
+            )
+        else:
+            resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # Convert frame to tensor and send it to device (cpu or cuda).
+        frame_tensor = ToTensor()(resized_frame).to(device)
+
+        # Feed frame to model and get detections.
+        det_start_time = time.time()
+        with torch.no_grad():
+            detections = model([frame_tensor])[0]
+        det_end_time = time.time()
+
+        det_fps = 1 / (det_end_time - det_start_time)
+
+        # Saved annotated vehicles from the image.
+        standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
+        standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
+        extract_frame(saved_frame_dir, frame, frame_count, video_name)
+
+        frame_count += 1
+
+        print(f"Frame {frame_count}/{frames}",
+                f"Detection FPS: {det_fps:.1f}")
+
+        cv2.putText(
+            frame,
+            f"FPS: {det_fps:.1f}",
+            (int(20), int(40)),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=1,
+            color=(0, 0, 255),
+            thickness=2,
+            lineType=cv2.LINE_AA
+        )
+
+        out.write(frame)
+
+        if args.show:
+            # Display or save output frame.
+            cv2.imshow("Output", frame)
+            # Press q to quit.
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+
+        # frame_count+=1
+
 
     # Release resources.
     cap.release()
@@ -156,7 +165,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
     parser.add_argument(
         '--input_videos',
-        default='input_videos/vid2.mp4',
+        default="D:/projects/1705591913860/014-20214/2024_0323_120137_100A.MP4",
         help='path to input video',
     )
     parser.add_argument(
@@ -218,7 +227,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cls',
         nargs='+',
-        default=[3],
+        default=[3, 6, 8],
         help='which classes to track',
         type=int
     )

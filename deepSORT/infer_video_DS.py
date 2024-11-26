@@ -32,7 +32,7 @@ np.random.seed(3101)
 
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 
 
