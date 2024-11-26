@@ -122,7 +122,6 @@ def infer_video(args):
         det_end_time = time.time()
         det_fps = 1 / (det_end_time - det_start_time)
 
-
         #Plot bounding boxes
         draw_boxes(detections, frame, args.cls, 0.9)
 

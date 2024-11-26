@@ -37,7 +37,7 @@ def draw_boxes(detections, frame, classes, threshold):
         )
         class_name_confidence = f"{class_name}: {confidence:.2f}"
         cv2.putText(frame, class_name_confidence, (int(box[0]), int(box[1] - 5)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2,
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1,
                     lineType=cv2.LINE_AA)
 
 
