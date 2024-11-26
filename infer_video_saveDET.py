@@ -5,17 +5,20 @@ import cv2
 import os
 import time
 import argparse
-from plot_bbox import draw_boxes
-from standardize_detections import standardize_to_txt, standardize_to_xml
+from helpers.plot_bbox import draw_boxes
+from helpers.standardize_detections import standardize_to_txt, standardize_to_xml
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from helpers.extract_frame import extract_frame
 from deepSORT.coco_classes import COCO_91_CLASSES
+#from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 """
 Running inference with faster R-CNN model
 
-This script run inference with video and save annotated video while saving the model output for each frame into
-a different format for other purposes
+- This script run inference with video and plot bounding boxes
+- It saves annotated video while saving the model annotation output for each frame into txt and xml format for other purposes.
+- The script also saved annotated frames into folder for further assessment. 
+
 """
 
 
@@ -29,10 +32,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 
 
-"""
-This function load model faster R-CNN with trained weight file
-"""
+
 def load_model():
+    """
+    This function load model faster R-CNN with trained weight file
+    """
     faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
                                                                              min_size=600,
                                                                              max_size=1000,
@@ -52,12 +56,17 @@ def load_model():
     return faster_rcnn_model
 
 
-"""
-This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
-Then each individual frame is aggregated to create an annotated video
 
-"""
+
+#tracker = BYTETracker()
+
 def infer_video(args):
+    """
+    This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
+    Then each individual frame is aggregated to create an annotated video.
+    """
+
+
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.cls]}")
     print(f"Detector: {args.pretrained_model}")
     print(f"Re-ID embedder: {args.embedder}")
@@ -122,12 +131,15 @@ def infer_video(args):
         det_end_time = time.time()
         det_fps = 1 / (det_end_time - det_start_time)
 
+        #tracker.update(detections)
+
         #Plot bounding boxes
         draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
         standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
         standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
+        # Extract annotated frame
         extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
         frame_count += 1

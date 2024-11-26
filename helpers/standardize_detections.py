@@ -1,9 +1,4 @@
-"""
-This file contains methods for converting output data of the faster R-CNN of the model to text file and xml file
 
-XML annotations for training purpose
-
-"""
 from xml.dom import minidom
 
 import numpy as np
@@ -12,16 +7,21 @@ import os
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom.minidom import parseString
+"""
+This file contains methods for converting output data of the faster R-CNN of the model to text file and xml file
 
-saved_annotation_folder = 'inference_dataset/annotations'
+XML annotations for training purpose
 
 """
-This method convert the output of the model to text format in the format of
-class x_center y_center width height confidence
 
-Note: the coordinates have not yet been normalised
-"""
+
 def standardize_to_txt(detections, classes, threshold, frame_no, vid_name):
+    """
+    This method convert the output of the model to text format in the format of
+    class x_center y_center width height confidence
+
+    Note: the coordinates have not yet been normalised
+    """
     boxes = detections["boxes"].cpu().numpy()
     labels = detections["labels"].cpu().numpy()
     scores = detections["scores"].cpu().numpy()
@@ -58,14 +58,17 @@ def standardize_to_txt(detections, classes, threshold, frame_no, vid_name):
 
 
 
-"""
-This method convert the output of the model to xml format for training data.
 
-Note: the coordinates have not yet been normalised.
-"""
 def standardize_to_xml(detections, classes, frame_no, vid_name, width, height):
+    """
+    This method convert the output of the model to xml format for training data.
+
+    Note: the coordinates have not yet been normalised.
+    """
     # Function to convert detection results to XML format
     # Extract boxes, labels, and scores from the detection dictionary
+    saved_annotation_folder = 'inference_dataset/annotations'
+
     boxes = detections['boxes'].cpu().numpy()  # Convert to numpy array
     labels = detections['labels'].cpu().numpy()
     lbl_mask = np.isin(labels, classes)

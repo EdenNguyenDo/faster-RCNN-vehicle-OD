@@ -8,7 +8,9 @@ from PIL import Image
 from tqdm import tqdm
 from torch.utils.data.dataset import Dataset
 import xml.etree.ElementTree as ET
-
+"""
+This script create functions for transforming annotations and loading data.
+"""
 
 def load_images_and_anns(im_dir, ann_dir, label2idx):
     r"""

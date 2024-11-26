@@ -1,10 +1,11 @@
 import os
 import cv2
-"""
-This script save the infer image in their corresponding 
-"""
+
 
 def extract_frame(output_folder, frame, frame_no, video_name):
+    """
+    This script save the infer image in a naming convention of {video_name}_{frame_number}.jpg
+    """
 
     # Create the output directory if it doesn't exist
     output_dir = os.path.join(output_folder, video_name)
