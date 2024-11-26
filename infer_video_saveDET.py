@@ -87,6 +87,7 @@ def infer_video(args):
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
     saved_frame_dir = 'inference_dataset/images/'
+    saved_annotated_frame_dir = 'inference_dataset/annotated_images'
 
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
@@ -131,16 +132,23 @@ def infer_video(args):
         det_end_time = time.time()
         det_fps = 1 / (det_end_time - det_start_time)
 
+        # Extract original frame
+        extract_frame(saved_frame_dir, frame, frame_count, video_name)
+
         #tracker.update(detections)
 
         #Plot bounding boxes
-        draw_boxes(detections, frame, args.cls, 0.9)
+        annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
         standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
         standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
+
+
+
         # Extract annotated frame
-        extract_frame(saved_frame_dir, frame, frame_count, video_name)
+        # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
+
 
         frame_count += 1
 
@@ -148,7 +156,7 @@ def infer_video(args):
                 f"Detection FPS: {det_fps:.1f}")
 
         cv2.putText(
-            frame,
+            annotated_frame,
             f"FPS: {det_fps:.1f}",
             (int(20), int(40)),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -158,11 +166,11 @@ def infer_video(args):
             lineType=cv2.LINE_AA
         )
 
-        out.write(frame)
+        out.write(annotated_frame)
 
         if args.show:
             # Display or save output frame.
-            cv2.imshow("Output", frame)
+            cv2.imshow("Output", annotated_frame)
             # Press q to quit.
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
