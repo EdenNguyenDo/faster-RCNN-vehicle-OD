@@ -1,3 +1,5 @@
+from collections import deque
+
 import numpy as np
 import torch
 import torchvision
@@ -11,7 +13,10 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from helpers.extract_frame import extract_frame
 from deepSORT.coco_classes import COCO_91_CLASSES
-#from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
+from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
+from bytetrackCustom.ByteTrackArgs import ByteTrackArgument
+from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking
+
 """
 Running inference with faster R-CNN model
 
@@ -21,16 +26,12 @@ Running inference with faster R-CNN model
 
 """
 
-
-
 np.random.seed(3101)
-
 
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
-
 
 
 def load_model():
@@ -56,16 +57,15 @@ def load_model():
     return faster_rcnn_model
 
 
-
-
-#tracker = BYTETracker()
+results = []
+history = deque()
 
 def infer_video(args):
     """
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-
+    trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
 
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.cls]}")
     print(f"Detector: {args.pretrained_model}")
@@ -101,7 +101,7 @@ def infer_video(args):
     # # Get the video's FPS (frames per second)
     # fps = cap.get(cv2.CAP_PROP_FPS)
     #
-    # # Set the frame interval to capture one frame every 5 seconds
+    # # Set the frame interval to capture one frame every 3 seconds
     # frame_interval = int(fps * 3)  # For 30 FPS, this equals 90 frames being skipped before one is saved
 
 
@@ -132,6 +132,73 @@ def infer_video(args):
         det_end_time = time.time()
         det_fps = 1 / (det_end_time - det_start_time)
 
+
+
+
+
+
+
+
+        ################################################################################################################
+        ########################################## Byte Track Integration ##############################################
+        ################################################################################################################
+
+        # Transform detection output to ones to be used by bytetracker
+        outputs = transform_detection_output(detections)
+
+
+        # img_height, img_width = outputs[0].boxes.orig_shape
+        # outputs = outputs[0].boxes.boxes
+        all_tlwhs = []
+        all_ids = []
+        all_classes = []
+        for i, tracker in enumerate(trackers):
+            outputs = np.array(outputs)
+            class_outputs = outputs[outputs[:, 5] == i][:,:5]
+            if class_outputs is not None:
+                online_targets = tracker.update(class_outputs, frame_count)
+                online_tlwhs = []
+                online_ids = []
+                online_scores = []
+                online_classes = [i] * len(online_targets)
+                for t in online_targets:
+                    tlwh = t.tlwh
+                    tid = t.track_id
+                    vertical = tlwh[2] / tlwh[3] > ByteTrackArgument.aspect_ratio_thresh
+                    if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
+                        online_tlwhs.append(tlwh)
+                        online_ids.append(tid)
+                        online_scores.append(t.score)
+                        box = (tlwh[0], tlwh[1], tlwh[2], tlwh[3])
+                        results.append(
+                            # frame_id, track_id, tl_x, tl_y, w, h, score = obj_prob * class_prob, class_idx, dummy, dummy, dummy
+                            f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f},-1,-1,-1\n"
+                        )
+
+                all_tlwhs += online_tlwhs
+                all_ids += online_ids
+                all_classes += online_classes
+
+
+        if len(history) < 30:
+            history.append((all_ids, all_tlwhs, all_classes))
+        else:
+            history.popleft()
+            history.append((all_ids, all_tlwhs, all_classes))
+
+        if len(all_tlwhs) > 0:
+            online_im = plot_tracking(
+                frame, history, args
+            )
+
+        else:
+            online_im = frame
+
+        ################################################################################################################
+        ################################################################################################################
+        ################################################################################################################
+
+
         # Extract original frame
         extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
@@ -156,7 +223,7 @@ def infer_video(args):
                 f"Detection FPS: {det_fps:.1f}")
 
         cv2.putText(
-            annotated_frame,
+            online_im,
             f"FPS: {det_fps:.1f}",
             (int(20), int(40)),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -170,7 +237,7 @@ def infer_video(args):
 
         if args.show:
             # Display or save output frame.
-            cv2.imshow("Output", annotated_frame)
+            cv2.imshow("Output", online_im)
             # Press q to quit.
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -188,7 +255,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
     parser.add_argument(
         '--input_videos',
-        default="input_videos/vid2.mp4",
+        default="input_videos/2024_0323_120137_100A.MP4",
         help='path to input video',
     )
     parser.add_argument(
@@ -265,6 +332,8 @@ if __name__ == '__main__':
         '--infer_samples', dest='infer_samples',
         default=True,
         type=bool)
+
+
 
 
     args = parser.parse_args()

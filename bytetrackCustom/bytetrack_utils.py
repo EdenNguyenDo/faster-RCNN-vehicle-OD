@@ -2,10 +2,14 @@ import cv2
 import numpy as np
 import torch
 
-from infer_video_saveDET import COLORS
+from config.VEHICLE_CLASS import VEHICLE_CLASSES
+
 """
 This script contains utility function for byte tracker to work.
 """
+
+COLORS = np.random.randint(0, 255, size=(len(VEHICLE_CLASSES), 3))
+
 
 def calculate_centroid(tl_x, tl_y, w, h):
     mid_x = int(tl_x + w / 2)
@@ -34,7 +38,7 @@ def convert_history_to_dict(track_history):
     return history_dict
 
 
-def plot_tracking(image, track_history):
+def plot_tracking(image, track_history, args):
     obj_ids, tlwhs, class_ids = track_history[-1]
     history_dict = convert_history_to_dict(track_history)
 
@@ -44,9 +48,9 @@ def plot_tracking(image, track_history):
     top_view = np.zeros([im_w, im_w, 3], dtype=np.uint8) + 255
 
     num_detections = len(tlwhs)
-    label_count = {class_name: 0 for class_name in args.cls}
-    for label_idx in class_ids:
-        label_count[ID2CLASSES[label_idx]] += 1
+    # label_count = {class_name: 0 for class_name in args.cls}
+    # for label_idx in class_ids:
+    #     label_count[VEHICLE_CLASSES[label_idx]] += 1
 
     for i, tlwh in enumerate(tlwhs):
         x1, y1, w, h = tlwh
@@ -54,11 +58,11 @@ def plot_tracking(image, track_history):
         obj_id = int(obj_ids[i])
         class_id = class_ids[i]
         id_text = '{}'.format(int(obj_id))
-        color = COLORS[class_id]
+        color = tuple(int(c) for c in COLORS[class_ids[i]])
         cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=1)
         cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, 1, color,
                     thickness=1)
-        cv2.putText(im, ID2CLASSES[class_id], (intbox[0], intbox[3] + 20), cv2.FONT_HERSHEY_PLAIN, 1, color,
+        cv2.putText(im, VEHICLE_CLASSES[class_id], (intbox[0], intbox[3] + 20), cv2.FONT_HERSHEY_PLAIN, 1, color,
                     thickness=1)
 
         for idx in range(len(history_dict[obj_id]) - 1):
@@ -66,3 +70,25 @@ def plot_tracking(image, track_history):
             cv2.line(im, prev_point, next_point, color, 2)
 
     return im
+
+
+def transform_detection_output(detections):
+
+    boxes = detections['boxes'].cpu().numpy()
+    labels = detections['labels'].cpu().numpy()
+    scores = detections['scores'].cpu().numpy()
+    outputs = []
+
+    for i, box in enumerate(boxes):
+        label = labels[i]
+        score =  scores[i]
+        xmin, ymin, xmax, ymax = boxes[i]
+        # width = xmax - xmin
+        # height = ymax - ymin
+        output = [xmin, ymin, xmax, ymax, score, label]
+        outputs.append(output)
+
+    outputs = torch.tensor(outputs, dtype=torch.float32)
+
+    return outputs
+
