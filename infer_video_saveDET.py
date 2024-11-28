@@ -156,7 +156,7 @@ def infer_video(args):
             outputs = np.array(outputs)
             class_outputs = outputs[outputs[:, 5] == i][:,:5]
             if class_outputs is not None:
-                online_targets = tracker.update(class_outputs, frame_count)
+                online_targets = tracker.update(class_outputs)
                 online_tlwhs = []
                 online_ids = []
                 online_scores = []
@@ -233,7 +233,7 @@ def infer_video(args):
             lineType=cv2.LINE_AA
         )
 
-        out.write(annotated_frame)
+        out.write(online_im)
 
         if args.show:
             # Display or save output frame.

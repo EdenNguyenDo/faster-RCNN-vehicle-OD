@@ -1,5 +1,5 @@
 class ByteTrackArgument:
-    track_thresh = 0.5 # High_threshold
+    track_thresh = 0.4 # High_threshold
     track_buffer = 50 # Number of frame lost tracklets are kept
     match_thresh = 0.8 # Matching threshold for first stage linear assignment
     aspect_ratio_thresh = 10.0 # Minimum bounding box aspect ratio
