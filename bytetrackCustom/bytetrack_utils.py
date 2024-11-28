@@ -82,8 +82,9 @@ def transform_detection_output(detections, classes):
     """
     Convert the detection output of Faster R CNN to the format used by ByteTrack
 
+    :param classes:
     :param detections:
-    :return:
+    :return: outputs - tensorized detections
     """
     boxes = detections['boxes'].cpu().numpy()
     labels = detections['labels'].cpu().numpy()
@@ -98,8 +99,6 @@ def transform_detection_output(detections, classes):
         label = labels[i]
         score =  scores[i]
         xmin, ymin, xmax, ymax = boxes[i]
-        # width = xmax - xmin
-        # height = ymax - ymin
         output = [xmin, ymin, xmax, ymax, score, label]
         outputs.append(output)
 
