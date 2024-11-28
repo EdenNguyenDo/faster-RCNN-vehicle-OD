@@ -1,4 +1,5 @@
 from collections import deque
+from time import sleep
 
 import numpy as np
 import torch
@@ -15,7 +16,7 @@ from helpers.extract_frame import extract_frame
 from deepSORT.coco_classes import COCO_91_CLASSES
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.ByteTrackArgs import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking
+from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
 
 """
 Running inference with faster R-CNN model
@@ -65,6 +66,7 @@ def infer_video(args):
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
+    global num_detections
     trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
 
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.cls]}")
@@ -134,11 +136,6 @@ def infer_video(args):
 
 
 
-
-
-
-
-
         ################################################################################################################
         ########################################## Byte Track Integration ##############################################
         ################################################################################################################
@@ -146,6 +143,7 @@ def infer_video(args):
         # Transform detection output to ones to be used by bytetracker
         outputs = transform_detection_output(detections)
 
+        track_start_time = time.time()
 
         # img_height, img_width = outputs[0].boxes.orig_shape
         # outputs = outputs[0].boxes.boxes
@@ -190,7 +188,7 @@ def infer_video(args):
             online_im = plot_tracking(
                 frame, history, args
             )
-
+            num_detections = count_tracks(history)
         else:
             online_im = frame
 
@@ -198,11 +196,8 @@ def infer_video(args):
         ################################################################################################################
         ################################################################################################################
 
-
         # Extract original frame
         extract_frame(saved_frame_dir, frame, frame_count, video_name)
-
-        #tracker.update(detections)
 
         #Plot bounding boxes
         annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
@@ -229,6 +224,18 @@ def infer_video(args):
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=1,
             color=(0, 0, 255),
+            thickness=2,
+            lineType=cv2.LINE_AA
+        )
+
+
+        cv2.putText(
+            online_im,
+            f"Count: {num_detections:.1f}",
+            (int(20), int(60)),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.7,
+            color=(0, 250, 255),
             thickness=2,
             lineType=cv2.LINE_AA
         )
@@ -282,7 +289,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--threshold',
-        default=0.7,
+        default=0.9,
         help='score threshold to filter out detections',
         type=float
     )

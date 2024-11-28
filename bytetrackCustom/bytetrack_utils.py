@@ -37,6 +37,12 @@ def convert_history_to_dict(track_history):
 
     return history_dict
 
+def count_tracks(track_history):
+    obj_ids, tlwhs, class_ids = track_history[-1]
+
+    num_detections = len(tlwhs)
+
+    return num_detections
 
 def plot_tracking(image, track_history, args):
     obj_ids, tlwhs, class_ids = track_history[-1]
@@ -64,6 +70,8 @@ def plot_tracking(image, track_history, args):
                     thickness=1)
         cv2.putText(im, VEHICLE_CLASSES[class_id], (intbox[0], intbox[3] + 20), cv2.FONT_HERSHEY_PLAIN, 1, color,
                     thickness=1)
+        cv2.putText(im, str(num_detections), (intbox[0], intbox[3] + 40), cv2.FONT_HERSHEY_PLAIN, 1, color,
+                    thickness=1)
 
         for idx in range(len(history_dict[obj_id]) - 1):
             prev_point, next_point = history_dict[obj_id][idx], history_dict[obj_id][idx + 1]
@@ -73,7 +81,12 @@ def plot_tracking(image, track_history, args):
 
 
 def transform_detection_output(detections):
+    """
+    Convert the detection output of Faster R CNN to the format used by ByteTrack
 
+    :param detections:
+    :return:
+    """
     boxes = detections['boxes'].cpu().numpy()
     labels = detections['labels'].cpu().numpy()
     scores = detections['scores'].cpu().numpy()
