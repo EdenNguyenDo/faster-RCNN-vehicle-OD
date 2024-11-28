@@ -141,7 +141,7 @@ def infer_video(args):
         ################################################################################################################
 
         # Transform detection output to ones to be used by bytetracker
-        outputs = transform_detection_output(detections)
+        outputs = transform_detection_output(detections, args.cls)
 
         track_start_time = time.time()
 
