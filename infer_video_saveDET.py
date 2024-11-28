@@ -135,24 +135,21 @@ def infer_video(args):
         det_fps = 1 / (det_end_time - det_start_time)
 
 
-
         ################################################################################################################
         ########################################## Byte Track Integration ##############################################
         ################################################################################################################
 
         # Transform detection output to ones to be used by bytetracker
-        outputs = transform_detection_output(detections, args.cls)
+        detections_bytetrack = transform_detection_output(detections, args.cls)
 
-        track_start_time = time.time()
-
-        # img_height, img_width = outputs[0].boxes.orig_shape
-        # outputs = outputs[0].boxes.boxes
+        # img_height, img_width = detections_bytetrack[0].boxes.orig_shape
+        # detections_bytetrack = detections_bytetrack[0].boxes.boxes
         all_tlwhs = []
         all_ids = []
         all_classes = []
         for i, tracker in enumerate(trackers):
-            outputs = np.array(outputs)
-            class_outputs = outputs[outputs[:, 5] == i][:,:5]
+            detections_bytetrack = np.array(detections_bytetrack)
+            class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == i][:, :5]
             if class_outputs is not None:
                 online_targets = tracker.update(class_outputs)
                 online_tlwhs = []
@@ -184,6 +181,9 @@ def infer_video(args):
             history.popleft()
             history.append((all_ids, all_tlwhs, all_classes))
 
+        print(history)
+
+
         if len(all_tlwhs) > 0:
             online_im = plot_tracking(
                 frame, history, args
@@ -197,20 +197,18 @@ def infer_video(args):
         ################################################################################################################
 
         # Extract original frame
-        extract_frame(saved_frame_dir, frame, frame_count, video_name)
+        # extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
         #Plot bounding boxes
         annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
-        standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
-        standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
-
+        # standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
+        # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
 
 
         # Extract annotated frame
         # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
-
 
         frame_count += 1
 
@@ -251,6 +249,7 @@ def infer_video(args):
 
         # frame_count+=1
 
+    print(history)
 
     # Release resources.
     cap.release()

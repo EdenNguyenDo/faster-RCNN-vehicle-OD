@@ -37,6 +37,7 @@ def convert_history_to_dict(track_history):
 
     return history_dict
 
+
 def count_tracks(track_history):
     obj_ids, tlwhs, class_ids = track_history[-1]
 
