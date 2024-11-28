@@ -15,12 +15,12 @@ XML annotations for training purpose
 """
 
 
-def standardize_to_txt(detections, classes, threshold, frame_no, vid_name):
+def standardize_to_txt(detections, classes, threshold, frame_no, vid_name, frame_width, frame_height):
     """
     This method convert the output of the model to text format in the format of
-    class x_center y_center width height confidence
+    class x_center y_center width height
 
-    Note: the coordinates have not yet been normalised
+    Note: the coordinates have been normalised to frame width and height
     """
     boxes = detections["boxes"].cpu().numpy()
     labels = detections["labels"].cpu().numpy()
@@ -46,14 +46,18 @@ def standardize_to_txt(detections, classes, threshold, frame_no, vid_name):
             confidence = scores[i]
             # Append ([x, y, w, h], score, label_string).
             x_min, y_min, x_max, y_max = box
+            normalised_x_min = x_min / frame_width
+            normalised_y_min = y_min / frame_height
+            normalised_x_max = x_max / frame_width
+            normalised_y_max = y_max / frame_height
 
             # Convert to (x_center, y_center, width, height)
-            x_center = (x_min + x_max) / 2
-            y_center = (y_min + y_max) / 2
-            width = x_max - x_min
-            height = y_max - y_min
+            x_center = (normalised_x_min + normalised_x_max) / 2
+            y_center = (normalised_y_min + normalised_y_max) / 2
+            width = normalised_x_max - normalised_x_min
+            height = normalised_y_max - normalised_y_min
 
-            f.write(f"{class_name} {x_center} {y_center} {width} {height} {confidence}\n")
+            f.write(f"{class_name} {x_center} {y_center} {width} {height}\n")
 
 
 

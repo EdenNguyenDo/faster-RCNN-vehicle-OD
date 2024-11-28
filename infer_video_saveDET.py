@@ -147,6 +147,8 @@ def infer_video(args):
         all_tlwhs = []
         all_ids = []
         all_classes = []
+        detection_output_xml = {'trackIDs': [], 'boxes': [], 'labels': [], 'scores': []}
+
         for i, tracker in enumerate(trackers):
             detections_bytetrack = np.array(detections_bytetrack)
             class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == i][:, :5]
@@ -158,13 +160,23 @@ def infer_video(args):
                 online_classes = [i] * len(online_targets)
                 for t in online_targets:
                     tlwh = t.tlwh
+                    tlbr = t.tlbr
                     tid = t.track_id
                     vertical = tlwh[2] / tlwh[3] > ByteTrackArgument.aspect_ratio_thresh
                     if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
                         online_tlwhs.append(tlwh)
+
+                        # Get the xml output for saving into annotation file
+                        tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]
+                        detection_output_xml['trackIDs'].append(tid)
+                        detection_output_xml['boxes'].append(tlbr_box)
+                        detection_output_xml['labels'].append(i)
+                        detection_output_xml['scores'].append(t.score)
+
                         online_ids.append(tid)
                         online_scores.append(t.score)
-                        box = (tlwh[0], tlwh[1], tlwh[2], tlwh[3])
+                        tlwh_box = (tlwh[0], tlwh[1], tlwh[2], tlwh[3])
+
                         results.append(
                             # frame_id, track_id, tl_x, tl_y, w, h, score = obj_prob * class_prob, class_idx, dummy, dummy, dummy
                             f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f},-1,-1,-1\n"
@@ -175,6 +187,7 @@ def infer_video(args):
                 all_classes += online_classes
 
 
+
         if len(history) < 30:
             history.append((all_ids, all_tlwhs, all_classes))
         else:
@@ -182,7 +195,6 @@ def infer_video(args):
             history.append((all_ids, all_tlwhs, all_classes))
 
         print(history)
-
 
         if len(all_tlwhs) > 0:
             online_im = plot_tracking(
@@ -199,11 +211,11 @@ def infer_video(args):
         # Extract original frame
         # extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
-        #Plot bounding boxes
-        annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
+        # #Plot bounding boxes
+        # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
-        # standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name)
+        standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name, frame_width, frame_height)
         # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
 
 
