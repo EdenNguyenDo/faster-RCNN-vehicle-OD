@@ -19,12 +19,12 @@ from bytetrackCustom.ByteTrackArgs import ByteTrackArgument
 from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
 
 """
-Running inference with faster R-CNN model
+Running inference with object tracking with faster R-CNN model
 
 - This script run inference with video and plot bounding boxes
 - It saves annotated video while saving the model annotation output for each frame into txt and xml format for other purposes.
 - The script also saved annotated frames into folder for further assessment. 
-
+- This script is able to run object tracking using ByteTrack algorithm. 
 """
 
 np.random.seed(3101)
@@ -194,7 +194,6 @@ def infer_video(args):
             history.popleft()
             history.append((all_ids, all_tlwhs, all_classes))
 
-        print(history)
 
         if len(all_tlwhs) > 0:
             online_im = plot_tracking(
@@ -335,7 +334,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cls',
         nargs='+',
-        default=[3, 6, 8],
+        default=[2, 3, 6, 8],
         help='which classes to track',
         type=int
     )

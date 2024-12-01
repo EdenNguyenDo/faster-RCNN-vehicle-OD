@@ -1,6 +1,8 @@
 import os
 import cv2
-
+"""
+This script extracts frames using a naming convention of {video_name}_{frame_no}.jpg
+"""
 
 def extract_frame(output_folder, frame, frame_no, video_name):
     """

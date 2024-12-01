@@ -1,9 +1,10 @@
-"""This file convert jsonl annotation file used by florence 2 to xml used by faster R-CNN"""
 
 import json
 import os
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element, SubElement, tostring
+
+"""This file convert jsonl annotation file used by florence 2 to xml used by faster R-CNN"""
 
 
 def create_pascal_voc_xml(image_filename, width, height, depth, objects):
