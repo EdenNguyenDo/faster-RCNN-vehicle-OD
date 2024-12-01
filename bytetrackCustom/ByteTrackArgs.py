@@ -1,4 +1,9 @@
+
 class ByteTrackArgument:
+    """
+    Argument for ByteTrack detection and tracking.
+    """
+
     track_thresh = 0.7 # High_threshold
     track_buffer = 50 # Number of frame lost tracklets are kept
     match_thresh = 0.8 # Matching threshold for first stage linear assignment

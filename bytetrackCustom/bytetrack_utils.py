@@ -12,17 +12,25 @@ COLORS = np.random.randint(0, 255, size=(len(VEHICLE_CLASSES), 3))
 
 
 def calculate_centroid(tl_x, tl_y, w, h):
+    """
+    Calculate the x,y centre of the bounding boxes from top-left coordinates and width and height of frames
+    :param tl_x:
+    :param tl_y:
+    :param w:
+    :param h:
+    :return:
+    """
     mid_x = int(tl_x + w / 2)
     mid_y = int(tl_y + h / 2)
     return mid_x, mid_y
 
 
-def convert_output(outputs: torch.Tensor):
-    # Output of format []
-    return
-
-
 def convert_history_to_dict(track_history):
+    """
+    Convert the tracking history to a dictionary for access within ByteTrack
+    :param track_history:
+    :return:
+    """
     history_dict = {}
     for frame_content in track_history:
         obj_ids, tlwhs, _ = frame_content
@@ -39,13 +47,26 @@ def convert_history_to_dict(track_history):
 
 
 def count_tracks(track_history):
+    """
+    Count the number of detections inside a frame
+
+    :param track_history:
+    :return:
+    """
     obj_ids, tlwhs, class_ids = track_history[-1]
 
     num_detections = len(tlwhs)
 
     return num_detections
 
-def plot_tracking(image, track_history, args):
+def plot_tracking(image, track_history):
+    """
+    Plot tracking bounding box for each object when ByteTrack is running.
+
+    :param image:
+    :param track_history:
+    :return:
+    """
     obj_ids, tlwhs, class_ids = track_history[-1]
     history_dict = convert_history_to_dict(track_history)
 
@@ -53,11 +74,6 @@ def plot_tracking(image, track_history, args):
     im_h, im_w = im.shape[:2]
 
     top_view = np.zeros([im_w, im_w, 3], dtype=np.uint8) + 255
-
-    num_detections = len(tlwhs)
-    # label_count = {class_name: 0 for class_name in args.cls}
-    # for label_idx in class_ids:
-    #     label_count[VEHICLE_CLASSES[label_idx]] += 1
 
     for i, tlwh in enumerate(tlwhs):
         x1, y1, w, h = tlwh
@@ -81,7 +97,7 @@ def plot_tracking(image, track_history, args):
 
 def transform_detection_output(detections, classes):
     """
-    Convert the detection output of Faster R CNN to the format used by ByteTrack
+    Convert the detection output of Faster R-CNN to the format used by ByteTrack
 
     :param classes:
     :param detections:

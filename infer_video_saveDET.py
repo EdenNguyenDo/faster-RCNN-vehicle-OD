@@ -197,7 +197,7 @@ def infer_video(args):
 
         if len(all_tlwhs) > 0:
             online_im = plot_tracking(
-                frame, history, args
+                frame, history
             )
             num_detections = count_tracks(history)
         else:
@@ -334,7 +334,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cls',
         nargs='+',
-        default=[2, 3, 6, 8],
+        default=[1, 2, 3, 6, 8],
         help='which classes to track',
         type=int
     )
