@@ -8,7 +8,11 @@ import cv2
 import os
 import time
 import argparse
-from helpers.plot_bbox import draw_boxes
+
+from shapely.geometry.point import Point
+from shapely.geometry.polygon import Polygon
+
+from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from helpers.standardize_detections import standardize_to_txt, standardize_to_xml
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
@@ -16,7 +20,8 @@ from helpers.extract_frame import extract_frame
 from deepSORT.coco_classes import COCO_91_CLASSES
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.ByteTrackArgs import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
+from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, calculate_centroid, \
+    cross_product_line
 
 """
 Running inference with object tracking with faster R-CNN model
@@ -34,6 +39,12 @@ os.makedirs(OUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 
+
+# Define polygons (as lists of (x, y) points)
+polygons = [
+    {'name': 'polygon_1', 'polygon': Polygon( [(350, 120), (630, 200), (300, 450), (125, 292)]), 'count': 0},
+    # Add more polygons as needed
+]
 
 def load_model():
     """
@@ -59,14 +70,31 @@ def load_model():
 
 
 results = []
-history = deque()
-
 def infer_video(args):
     """
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-    global num_detections
+
+
+
+    # Define the line (start and end points)
+    #todo read in lines from svg file
+    #todo create some way of pairing the lines into A and B hoses
+    #todo fucntion which reads lines from svg or csv, and outputs arrays of line_start and line_end points,
+    lines_start = [0]*2
+    lines_end = [0]*2
+    lines_start[0] = (350, 120)
+    lines_end[0] = (125, 292)
+    lines_start[1] = (396, 141)
+    lines_end[1] = (259, 312)
+    region_counts = [[0] * len(lines_end)] * len(VEHICLE_CLASSES)
+
+    line_color = (0, 255, 0)  # Green line color
+    line_thickness = 2
+
+    #(630, 200), (300, 450)
+
     trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
 
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.cls]}")
@@ -98,6 +126,8 @@ def infer_video(args):
         (frame_width, frame_height)
     )
 
+
+
     frame_count = 0  # To count total frames.
 
     # # Get the video's FPS (frames per second)
@@ -106,6 +136,16 @@ def infer_video(args):
     # # Set the frame interval to capture one frame every 3 seconds
     # frame_interval = int(fps * 3)  # For 30 FPS, this equals 90 frames being skipped before one is saved
 
+    # previous_side = None
+    # start_point_normalized = ((line_start[0] / frame_width), (line_start[1] / frame_height))
+    # end_point_normalized = ((line_end[0] / frame_width), (line_end[1] / frame_height))
+
+    global cross_product
+    global current_side
+    global previous_side
+    previous_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
+    current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
+    cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
 
     while cap.isOpened():
 
@@ -114,6 +154,12 @@ def infer_video(args):
 
         if not ret:
             break
+
+        # draw user defined lines on page
+        #todo: read these from wherever the line info is saved into
+        cv2.line(frame, lines_start[0], lines_end[0], line_color, line_thickness)
+        cv2.line(frame, lines_start[1], lines_end[1], line_color, line_thickness)
+
 
         # if frame_count % frame_interval ==0:
 
@@ -127,19 +173,18 @@ def infer_video(args):
         # Convert frame to tensor and send it to device (cpu or cuda).
         frame_tensor = ToTensor()(resized_frame).to(device)
 
-        # Feed frame to model and get detections.
+        # Feed frame to model and get detections - these are in xyxy format, not normalised.
         det_start_time = time.time()
         with torch.no_grad():
             detections = model([frame_tensor])[0]
         det_end_time = time.time()
         det_fps = 1 / (det_end_time - det_start_time)
 
-
         ################################################################################################################
         ########################################## Byte Track Integration ##############################################
         ################################################################################################################
 
-        # Transform detection output to ones to be used by bytetracker
+        # Transform detection output to ones to be used by bytetracker - xyxy px,
         detections_bytetrack = transform_detection_output(detections, args.cls)
 
         # img_height, img_width = detections_bytetrack[0].boxes.orig_shape
@@ -149,16 +194,17 @@ def infer_video(args):
         all_classes = []
         detection_output_xml = {'trackIDs': [], 'boxes': [], 'labels': [], 'scores': []}
 
-        for i, tracker in enumerate(trackers):
+        for class_id, tracker in enumerate(trackers):
             detections_bytetrack = np.array(detections_bytetrack)
-            class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == i][:, :5]
+            class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == class_id][:, :5]
             if class_outputs is not None:
                 online_targets = tracker.update(class_outputs)
                 online_tlwhs = []
                 online_ids = []
                 online_scores = []
-                online_classes = [i] * len(online_targets)
+                online_classes = [class_id] * len(online_targets)
                 for t in online_targets:
+                    # tracker box coordinates are given in pixels, not normalised
                     tlwh = t.tlwh
                     tlbr = t.tlbr
                     tid = t.track_id
@@ -166,11 +212,14 @@ def infer_video(args):
                     if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
                         online_tlwhs.append(tlwh)
 
+                        # use the trackings' output bbox locations to detect objects, with
+                        perform_count_line_detections(class_id, region_counts, tid, tlbr, lines_start, lines_end)
+
                         # Get the xml output for saving into annotation file
                         tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]
                         detection_output_xml['trackIDs'].append(tid)
                         detection_output_xml['boxes'].append(tlbr_box)
-                        detection_output_xml['labels'].append(i)
+                        detection_output_xml['labels'].append(class_id)
                         detection_output_xml['scores'].append(t.score)
 
                         online_ids.append(tid)
@@ -179,21 +228,18 @@ def infer_video(args):
 
                         results.append(
                             # frame_id, track_id, tl_x, tl_y, w, h, score = obj_prob * class_prob, class_idx, dummy, dummy, dummy
-                            f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f},-1,-1,-1\n"
+                            f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}, {class_id}, -1,-1,-1\n"
                         )
 
                 all_tlwhs += online_tlwhs
                 all_ids += online_ids
                 all_classes += online_classes
 
-
-
         if len(history) < 30:
             history.append((all_ids, all_tlwhs, all_classes))
         else:
             history.popleft()
             history.append((all_ids, all_tlwhs, all_classes))
-
 
         if len(all_tlwhs) > 0:
             online_im = plot_tracking(
@@ -237,10 +283,9 @@ def infer_video(args):
             lineType=cv2.LINE_AA
         )
 
-
         cv2.putText(
             online_im,
-            f"Count: {num_detections:.1f}",
+            f"Count:  {region_counts[3]}", #{region_counts:.1f}
             (int(20), int(60)),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=0.7,
@@ -266,6 +311,36 @@ def infer_video(args):
     cap.release()
     out.release()  # Ensure the VideoWriter is released.
     cv2.destroyAllWindows()
+
+
+def perform_count_line_detections(class_id, region_counts, tid, tlbr, lines_start, lines_end):
+    # Line intersection/counting section
+    ### Calculate centroids in px, count if in regions
+    x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
+    y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
+    # cv2.line(frame, (int(x_centre), int(y_centre)), line_start[0], line_color, line_thickness)
+    # cv2.line(frame, (int(x_centre), int(y_centre)), line_start[1], (0,0,255), line_thickness)
+
+    # iterate over user defined boundary lines
+    for line_id in range(len(lines_start)):
+        # todo tidy up - split into functions
+        # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
+        # todo
+        cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), lines_start[line_id], lines_end[line_id])
+
+        if cross_product[tid][line_id] >= 0:
+            current_side[tid][line_id] = 'positive'
+        elif cross_product[tid][line_id] < 0:
+            current_side[tid][line_id] = 'negative'
+
+        # Check if the object has crossed the line
+        if previous_side[tid][line_id] != 0:  # check that it isn't a brand new track
+            if previous_side[tid][line_id] != current_side[tid][line_id]:
+                print(
+                    f"Object {class_id} has crossed the line with id {line_id}! Final side: {current_side[tid][line_id]}")
+                region_counts[class_id][line_id]+= 1
+        previous_side[tid][line_id] = current_side[tid][line_id]
+
 
 if __name__ == '__main__':
 
@@ -354,5 +429,6 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-
+    history = deque()
     infer_video(args)
+

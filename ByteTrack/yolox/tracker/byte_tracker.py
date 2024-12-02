@@ -165,6 +165,7 @@ class BYTETracker(object):
         lost_stracks = []
         removed_stracks = []
 
+        # parse the input detections based on size to extract scores and box coordinates
         if output_results.shape[1] == 5:
             scores = output_results[:, 4]
             bboxes = output_results[:, :4]
@@ -188,7 +189,7 @@ class BYTETracker(object):
         scores_second = scores[inds_second]
 
         if len(dets) > 0:
-            '''Detections'''
+            '''Detections - convert box format to top left, width height'''
             #detections = [STrack(STrack.tlbr_to_tlwh(tlbr), s) for (tlbr, s) in zip(dets, scores_keep)]
             detections = np.array([STrack(STrack.tlbr_to_tlwh(tlbr), s) for (tlbr, s) in zip(dets, scores_keep)])
 
