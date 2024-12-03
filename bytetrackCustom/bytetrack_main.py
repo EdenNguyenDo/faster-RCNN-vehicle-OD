@@ -16,11 +16,18 @@ class ByteTracker:
         self.all_classes = None
         self.all_ids = None
         self.all_tlwhs = None
-
         self.trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
         self.line_counter = LineCounter(args.lines_data)
+
         self.history = deque()
         self.region_counts = [[0] * len(self.line_counter.lines) for _ in range(len(VEHICLE_CLASSES))]
+        self.live = args.live
+
+        if args.live:
+            self.video_name = "Cam1"
+        else:
+            self.video_name = args.input_video.split('/')[-1].split('.')[0]
+
 
 
     def startTrack(self, frame, detections_bytetrack, frame_count):
@@ -49,7 +56,7 @@ class ByteTracker:
                         online_tlwhs.append(tlwh)
 
                         # use the trackings' output bbox locations to detect objects, with
-                        self.region_counts = self.line_counter.perform_count_line_detections(class_id, tid, tlbr)
+                        self.region_counts = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, self.video_name)
 
                         # Get the xml output for saving into annotation file
                         tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]

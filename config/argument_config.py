@@ -14,6 +14,13 @@ def setup_argument_parser():
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
 
     parser.add_argument(
+        '--live',
+        default = True,
+        type = bool,
+        help='live inference or not'
+    )
+
+    parser.add_argument(
         '--input_video',
         default=DEFAULT_INPUT_VIDEO_PATH,
         help='Path to input video'

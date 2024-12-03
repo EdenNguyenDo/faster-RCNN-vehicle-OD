@@ -1,5 +1,8 @@
-import cv2
+import csv
+import time
+from operator import index
 
+import cv2
 from bytetrackCustom.bytetrack_utils import cross_product_line
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import pandas as pd
@@ -30,7 +33,7 @@ class LineCounter:
         for start, end in zip(self.lines_start, self.lines_end):
             cv2.line(frame, start, end, color=(0, 255, 0), thickness=2)
 
-    def perform_count_line_detections(self, class_id, tid, tlbr):
+    def perform_count_line_detections(self, class_id, tid, tlbr, video_name):
         # Line intersection/counting section
         ### Calculate centroids in px, count if in regions
         x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
@@ -39,9 +42,6 @@ class LineCounter:
 
         # iterate over user defined boundary lines
         for line_id, (start, end) in enumerate(zip(self.lines_start, self.lines_end)):
-            # Initialize lists for line start and end points based on the self.lines dictionary
-
-
             # TODO save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
             self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
 
@@ -50,13 +50,32 @@ class LineCounter:
             elif self.cross_product[tid][line_id] < 0:
                 self.current_side[tid][line_id] = 'negative'
 
-
             # Check if the object has crossed the line
             if self.previous_side[tid][line_id] != 0:  # check that it isn't a brand new track
                 if self.previous_side[tid][line_id] != self.current_side[tid][line_id]:
                     print(f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
                     self.region_counts[class_id][line_id]+= 1
             self.previous_side[tid][line_id] = self.current_side[tid][line_id]
+
+
+
+        # Prepare data for the CSV file
+        timestamp = f"{time.time():.3f}"  # Get current time and format to 3 decimal places
+        filename = f"{video_name}_{timestamp}.csv"
+
+        # Collect data to write
+        data_to_write = []
+        for class_id, item in enumerate(self.region_counts):
+            for count in item:
+                line_id = index(count)
+                data_to_write.append([tid, class_id, line_id, count])
+
+        # Write the data to a CSV file
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["track_id", "class_id", "line_id", "current_count"])  # Write header
+            writer.writerows(data_to_write)  # Write data rows
+
         return self.region_counts
 
 
@@ -64,10 +83,7 @@ class LineCounter:
 def read_lines_from_csv(filePath):
     lines = {}
     reader = pd.read_csv(filePath)
-
     for index, row in reader.iterrows():
-
-
         try:
             # Direct use of the line_id from the CSV without 'line' prefix
             line_id = str(row['line_id'])
@@ -84,7 +100,6 @@ def read_lines_from_csv(filePath):
             print(f"Missing expected column in row {index}: {e}")
         except ValueError as e:
             print(f"Invalid data format in row {index}: {e}")
-
     return lines
 
 
