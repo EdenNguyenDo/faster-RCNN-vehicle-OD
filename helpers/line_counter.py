@@ -1,4 +1,5 @@
 import csv
+import os
 import time
 from operator import index
 
@@ -59,9 +60,15 @@ class LineCounter:
 
 
 
+        output_dir = os.path.join('./saved_counts/', video_name)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         # Prepare data for the CSV file
         timestamp = f"{time.time():.3f}"  # Get current time and format to 3 decimal places
         filename = f"{video_name}_{timestamp}.csv"
+
+        filepath = os.path.join(output_dir, filename)
+
 
         # Collect data to write
         data_to_write = []
@@ -71,7 +78,7 @@ class LineCounter:
                 data_to_write.append([tid, class_id, line_id, count])
 
         # Write the data to a CSV file
-        with open(filename, mode='w', newline='') as file:
+        with open(filepath, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(["track_id", "class_id", "line_id", "current_count"])  # Write header
             writer.writerows(data_to_write)  # Write data rows
