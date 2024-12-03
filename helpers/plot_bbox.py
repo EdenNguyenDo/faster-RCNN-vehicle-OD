@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
-from deepSORT.coco_classes import COCO_91_CLASSES
+from config.coco_classes import COCO_91_CLASSES
 
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 

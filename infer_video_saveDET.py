@@ -1,5 +1,4 @@
 from collections import deque
-from time import sleep
 
 import numpy as np
 import torch
@@ -9,19 +8,17 @@ import os
 import time
 import argparse
 
-from shapely.geometry.point import Point
-from shapely.geometry.polygon import Polygon
 
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
-from helpers.standardize_detections import standardize_to_txt, standardize_to_xml
+from config.argument_config import setup_argument_parser
+from helpers.line_counter import LineCounter, process_count, read_lines_from_csv
+from helpers.standardize_detections import standardize_to_txt
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
-from helpers.extract_frame import extract_frame
-from deepSORT.coco_classes import COCO_91_CLASSES
+from config.coco_classes import COCO_91_CLASSES
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.ByteTrackArgs import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, calculate_centroid, \
-    cross_product_line
+from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, cross_product_line
 
 """
 Running inference with object tracking with faster R-CNN model
@@ -40,11 +37,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 
 
-# Define polygons (as lists of (x, y) points)
-polygons = [
-    {'name': 'polygon_1', 'polygon': Polygon( [(350, 120), (630, 200), (300, 450), (125, 292)]), 'count': 0},
-    # Add more polygons as needed
-]
 
 def load_model():
     """
@@ -81,23 +73,21 @@ def infer_video(args):
     # Define the line (start and end points)
     #todo read in lines from svg file
     #todo create some way of pairing the lines into A and B hoses
-    #todo fucntion which reads lines from svg or csv, and outputs arrays of line_start and line_end points,
-    lines_start = [0]*2
-    lines_end = [0]*2
-    lines_start[0] = (350, 120)
-    lines_end[0] = (125, 292)
-    lines_start[1] = (396, 141)
-    lines_end[1] = (259, 312)
-    region_counts = [[0] * len(lines_end)] * len(VEHICLE_CLASSES)
+    #todo function which reads lines from svg or csv, and outputs arrays of line_start and line_end points,
+    # lines_start = [0]*2
+    # lines_end = [0]*2
+    # lines_start[0] = (350, 120)
+    # lines_end[0] = (125, 292)
+    # lines_start[1] = (396, 141)
+    # lines_end[1] = (259, 312)
+    # region_counts = [[0] * len(lines_end)] * len(VEHICLE_CLASSES)
 
-    line_color = (0, 255, 0)  # Green line color
-    line_thickness = 2
 
     #(630, 200), (300, 450)
 
     trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
 
-    print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.cls]}")
+    print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.classes_to_track]}")
     print(f"Detector: {args.pretrained_model}")
     print(f"Re-ID embedder: {args.embedder}")
 
@@ -109,7 +99,7 @@ def infer_video(args):
     model.eval().to(device)
 
 
-    VIDEO_PATH = args.input_videos
+    VIDEO_PATH = args.input_video
     cap = cv2.VideoCapture(VIDEO_PATH)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
@@ -140,12 +130,14 @@ def infer_video(args):
     # start_point_normalized = ((line_start[0] / frame_width), (line_start[1] / frame_height))
     # end_point_normalized = ((line_end[0] / frame_width), (line_end[1] / frame_height))
 
-    global cross_product
-    global current_side
-    global previous_side
-    previous_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-    current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-    cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
+    # global cross_product
+    # global current_side
+    # global previous_side
+    # previous_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
+    # current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
+    # cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
+    region_counts = None
+    line_counter = LineCounter(args.lines_data)
 
     while cap.isOpened():
 
@@ -156,14 +148,11 @@ def infer_video(args):
             break
 
         # draw user defined lines on page
-        #todo: read these from wherever the line info is saved into
-        cv2.line(frame, lines_start[0], lines_end[0], line_color, line_thickness)
-        cv2.line(frame, lines_start[1], lines_end[1], line_color, line_thickness)
-
+        line_counter.draw_lines(frame)
 
         # if frame_count % frame_interval ==0:
 
-        if args.imgsz is not None:
+        if args.img_size is not None:
             resized_frame = cv2.resize(
                 cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
                 (args.imgsz, args.imgsz)
@@ -185,7 +174,7 @@ def infer_video(args):
         ################################################################################################################
 
         # Transform detection output to ones to be used by bytetracker - xyxy px,
-        detections_bytetrack = transform_detection_output(detections, args.cls)
+        detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
 
         # img_height, img_width = detections_bytetrack[0].boxes.orig_shape
         # detections_bytetrack = detections_bytetrack[0].boxes.boxes
@@ -213,7 +202,7 @@ def infer_video(args):
                         online_tlwhs.append(tlwh)
 
                         # use the trackings' output bbox locations to detect objects, with
-                        perform_count_line_detections(class_id, region_counts, tid, tlbr, lines_start, lines_end)
+                        region_counts = line_counter.perform_count_line_detections(class_id, tid, tlbr)
 
                         # Get the xml output for saving into annotation file
                         tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]
@@ -260,7 +249,7 @@ def infer_video(args):
         # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
-        standardize_to_txt(detections, args.cls, args.threshold, frame_count, video_name, frame_width, frame_height)
+        standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
         # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
 
 
@@ -283,9 +272,11 @@ def infer_video(args):
             lineType=cv2.LINE_AA
         )
 
+        count = process_count(region_counts)
+        
         cv2.putText(
             online_im,
-            f"Count:  {region_counts[3]}", #{region_counts:.1f}
+            f"Count of cars:  {count[3] if region_counts is not None else 0}", #{region_counts:.1f}
             (int(20), int(60)),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=0.7,
@@ -305,130 +296,15 @@ def infer_video(args):
 
         # frame_count+=1
 
-    print(history)
-
     # Release resources.
     cap.release()
     out.release()  # Ensure the VideoWriter is released.
     cv2.destroyAllWindows()
 
 
-def perform_count_line_detections(class_id, region_counts, tid, tlbr, lines_start, lines_end):
-    # Line intersection/counting section
-    ### Calculate centroids in px, count if in regions
-    x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
-    y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
-    # cv2.line(frame, (int(x_centre), int(y_centre)), line_start[0], line_color, line_thickness)
-    # cv2.line(frame, (int(x_centre), int(y_centre)), line_start[1], (0,0,255), line_thickness)
-
-    # iterate over user defined boundary lines
-    for line_id in range(len(lines_start)):
-        # todo tidy up - split into functions
-        # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
-        # todo
-        cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), lines_start[line_id], lines_end[line_id])
-
-        if cross_product[tid][line_id] >= 0:
-            current_side[tid][line_id] = 'positive'
-        elif cross_product[tid][line_id] < 0:
-            current_side[tid][line_id] = 'negative'
-
-        # Check if the object has crossed the line
-        if previous_side[tid][line_id] != 0:  # check that it isn't a brand new track
-            if previous_side[tid][line_id] != current_side[tid][line_id]:
-                print(
-                    f"Object {class_id} has crossed the line with id {line_id}! Final side: {current_side[tid][line_id]}")
-                region_counts[class_id][line_id]+= 1
-        previous_side[tid][line_id] = current_side[tid][line_id]
-
-
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
-    parser.add_argument(
-        '--input_videos',
-        default="input_videos/2024_0323_120137_100A.MP4",
-        help='path to input video',
-    )
-    parser.add_argument(
-        '--imgsz',
-        default=None,
-        help='image resize, 640 will resize images to 640x640',
-        type=int
-    )
-    parser.add_argument(
-        '--pretrained_model',
-        default='fasterrcnn_resnet50_fpn',
-        help='model name',
-        choices=[
-            'fasterrcnn_resnet50_fpn_v2',
-            'fasterrcnn_resnet50_fpn',
-            'fasterrcnn_mobilenet_v3_large_fpn',
-            'fasterrcnn_mobilenet_v3_large_320_fpn',
-            'fcos_resnet50_fpn',
-            'ssd300_vgg16',
-            'ssdlite320_mobilenet_v3_large',
-            'retinanet_resnet50_fpn',
-            'retinanet_resnet50_fpn_v2'
-        ]
-    )
-    parser.add_argument(
-        '--threshold',
-        default=0.9,
-        help='score threshold to filter out detections',
-        type=float
-    )
-
-    parser.add_argument(
-        '--max_age',
-        default=30,
-        help='type of feature extractor to use',
-        type = int
-    )
-
-    parser.add_argument(
-        '--embedder',
-        default='mobilenet',
-        help='type of feature extractor to use',
-        choices=[
-            "mobilenet",
-            "torchreid",
-            "clip_RN50",
-            "clip_RN101",
-            "clip_RN50x4",
-            "clip_RN50x16",
-            "clip_ViT-B/32",
-            "clip_ViT-B/16"
-        ]
-    )
-    parser.add_argument(
-        '--show',
-        action='store_false',
-        help='visualize results in real-time on screen'
-    )
-    parser.add_argument(
-        '--cls',
-        nargs='+',
-        default=[1, 2, 3, 6, 8],
-        help='which classes to track',
-        type=int
-    )
-
-    parser.add_argument(
-        '--evaluate',
-        dest='evaluate',
-        default=True,
-        type=bool)
-
-    parser.add_argument(
-        '--infer_samples', dest='infer_samples',
-        default=True,
-        type=bool)
-
-
-
-
-    args = parser.parse_args()
+    args = setup_argument_parser().parse_args()
     history = deque()
     infer_video(args)
 

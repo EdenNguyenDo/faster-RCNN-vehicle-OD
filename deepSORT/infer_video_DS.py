@@ -25,7 +25,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from helpers.helper import Helper
-from deepSORT.coco_classes import COCO_91_CLASSES
+from config.coco_classes import COCO_91_CLASSES
 
 np.random.seed(3101)
 

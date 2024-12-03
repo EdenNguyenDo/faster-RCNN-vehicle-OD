@@ -9,9 +9,9 @@ import torchvision
 import time
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from torchvision.transforms import ToTensor
-from coco_classes import COCO_91_CLASSES
+from config.coco_classes import COCO_91_CLASSES
 from helpers.helper import Helper
-from infer_video_DS import COLORS, device, set_tracker, OUT_DIR
+from infer_video_DS import COLORS, device
 import json
 import matplotlib.pyplot as plt
 

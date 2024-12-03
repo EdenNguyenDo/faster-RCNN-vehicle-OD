@@ -7,9 +7,6 @@ from PIL import Image
 from torchvision.transforms import transforms as transforms
 from infer_image_krcnn import get_model
 from deep_sort_realtime.deepsort_tracker import DeepSort
-from deepSORT.coco_classes import COCO_91_CLASSES
-from helpers.helper import Helper
-
 
 # construct the argument parser to parse the command line arguments
 parser = argparse.ArgumentParser()
