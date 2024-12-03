@@ -131,7 +131,11 @@ def infer_video(args):
     # current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
     # cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
 
-    region_counts = []
+    class_count_dict = {"human": 0,
+                        "vehicle type 1 - bicycle": 0,
+                        "vehicle type 1 - car": 0,
+                        "vehicle type 3": 0,
+                        "vehicle type 5": 0}
 
     line_counter = LineCounter(args.lines_data)
 
@@ -173,11 +177,12 @@ def infer_video(args):
         detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
 
 
-        if detections_bytetrack.dim() > 1:
+        if len(detections_bytetrack)>0:
+        # if detections_bytetrack.dim() > 1:
             online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count)
+            class_count_dict = process_count(region_counts, args.classes_to_track)
         else:
             online_im = frame
-            region_counts = []
 
         ################################################################################################################
         ################################################################################################################
@@ -191,18 +196,13 @@ def infer_video(args):
         # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
-        standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
+        # standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
         # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
 
-        class_count_dict = process_count(region_counts, args.classes_to_track)
 
         # Extract annotated frame
         # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
 
-        frame_count += 1
-
-        print(f"Frame {frame_count}/{frames}",
-                f"Detection FPS: {det_fps:.1f}")
 
         cv2.putText(
             online_im,
@@ -230,6 +230,10 @@ def infer_video(args):
             )
             y_position += 20  # Move down for the next class
 
+        frame_count += 1
+
+        print(f"Frame {frame_count}/{frames}",
+              f"Detection FPS: {det_fps:.1f}")
 
         out.write(online_im)
 

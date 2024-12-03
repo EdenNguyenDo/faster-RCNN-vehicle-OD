@@ -4,6 +4,7 @@ import numpy as np
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.bytetrack_args import ByteTrackArgument
 from bytetrackCustom.bytetrack_utils import plot_tracking, transform_detection_output
+from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from helpers.line_counter import LineCounter
 
 
@@ -19,7 +20,7 @@ class ByteTracker:
         self.trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
         self.line_counter = LineCounter(args.lines_data)
         self.history = deque()
-        self.region_counts = []
+        self.region_counts = [[0] * len(self.line_counter.lines) for _ in range(len(VEHICLE_CLASSES))]
 
 
     def startTrack(self, frame, detections_bytetrack, frame_count):

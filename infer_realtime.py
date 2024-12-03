@@ -52,6 +52,7 @@ def infer_video(args):
     # Set model to evaluation mode.
     model.eval().to(device)
 
+
     VIDEO_PATH = args.input_video
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
@@ -69,6 +70,11 @@ def infer_video(args):
     )
 
     frame_count = 0  # To count total frames.
+    class_count_dict = {"human":0,
+                        "vehicle type 1 - bicycle": 0,
+                        "vehicle type 1 - car": 0,
+                        "vehicle type 3": 0,
+                        "vehicle type 5": 0}
 
     line_counter = LineCounter(args.lines_data)
 
@@ -97,6 +103,7 @@ def infer_video(args):
 
         # Feed frame to model and get detections - these are in xyxy format, not normalised.
         det_start_time = time.time()
+        det_start_time = time.time()
         with torch.no_grad():
             detections = model([frame_tensor])[0]
         det_end_time = time.time()
@@ -108,13 +115,13 @@ def infer_video(args):
 
         # Transform detection output to ones to be used by bytetracker - xyxy px,
         detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
-
-        if detections_bytetrack.dim() > 1:
+        print(time.time())
+        if len(detections_bytetrack)>0:
+        # if detections_bytetrack.dim() > 1:
             online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count)
+            class_count_dict = process_count(region_counts, args.classes_to_track)
         else:
             online_im = frame
-            region_counts = []
-            # Exception(detections_bytetrack)
 
         # Extract original frame
         # extract_frame(saved_frame_dir, frame, frame_count, video_name)
@@ -123,8 +130,7 @@ def infer_video(args):
         # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
-        standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name,
-                           frame_width, frame_height)
+        # standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
         # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
 
         # Extract annotated frame
@@ -134,7 +140,6 @@ def infer_video(args):
 
         print(f"Frame {frame_count}",
               f"Detection FPS: {det_fps:.1f}")
-
         cv2.putText(
             online_im,
             f"FPS: {det_fps:.1f}",
@@ -146,18 +151,21 @@ def infer_video(args):
             lineType=cv2.LINE_AA
         )
 
-        count = process_count(region_counts)
 
-        cv2.putText(
-            online_im,
-            f"Count of cars:  {count[3] if len(region_counts)>0 else 0}",  # {region_counts:.1f}
-            (int(20), int(60)),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=0.7,
-            color=(255, 165, 10),
-            thickness=2,
-            lineType=cv2.LINE_AA
-        )
+        # Display each class with its count
+        y_position = 80  # Starting y-position for text display
+        for class_name, count in class_count_dict.items():
+            cv2.putText(
+                online_im,
+                f"{class_name}: {count}",
+                (int(20), int(y_position)),
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                fontScale=0.5,  # Smaller font size
+                color=(255, 0, 0),  # Blue color: (B, G, R)
+                thickness=1,
+                lineType=cv2.LINE_AA
+            )
+            y_position += 20  # Move down for the next class
 
         out.write(online_im)
 

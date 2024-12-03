@@ -41,9 +41,8 @@ class LineCounter:
         for line_id, (start, end) in enumerate(zip(self.lines_start, self.lines_end)):
             # Initialize lists for line start and end points based on the self.lines dictionary
 
-            # todo tidy up - split into functions
-            # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
-            # todo
+
+            # TODO save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
             self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
 
             if self.cross_product[tid][line_id] >= 0:
@@ -58,7 +57,6 @@ class LineCounter:
                     print(f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
                     self.region_counts[class_id][line_id]+= 1
             self.previous_side[tid][line_id] = self.current_side[tid][line_id]
-        print(self.region_counts[0])
         return self.region_counts
 
 
