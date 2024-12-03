@@ -8,7 +8,7 @@ import os
 import time
 import argparse
 
-
+from bytetrackCustom.bytetrack_main import ByteTracker
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from config.argument_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count, read_lines_from_csv
@@ -17,7 +17,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
-from bytetrackCustom.ByteTrackArgs import ByteTrackArgument
+from bytetrackCustom.bytetrack_args import ByteTrackArgument
 from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, cross_product_line
 
 """
@@ -67,25 +67,20 @@ def infer_video(args):
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-
+    # main_tracker = ByteTracker(args)
 
 
     # Define the line (start and end points)
     #todo read in lines from svg file
     #todo create some way of pairing the lines into A and B hoses
     #todo function which reads lines from svg or csv, and outputs arrays of line_start and line_end points,
-    # lines_start = [0]*2
-    # lines_end = [0]*2
-    # lines_start[0] = (350, 120)
-    # lines_end[0] = (125, 292)
-    # lines_start[1] = (396, 141)
-    # lines_end[1] = (259, 312)
-    # region_counts = [[0] * len(lines_end)] * len(VEHICLE_CLASSES)
 
 
     #(630, 200), (300, 450)
 
     trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
+    main_tracker = ByteTracker(args)
+
 
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.classes_to_track]}")
     print(f"Detector: {args.pretrained_model}")
@@ -137,6 +132,7 @@ def infer_video(args):
     # current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
     # cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
     region_counts = None
+
     line_counter = LineCounter(args.lines_data)
 
     while cap.isOpened():
@@ -176,71 +172,74 @@ def infer_video(args):
         # Transform detection output to ones to be used by bytetracker - xyxy px,
         detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
 
+
         # img_height, img_width = detections_bytetrack[0].boxes.orig_shape
         # detections_bytetrack = detections_bytetrack[0].boxes.boxes
-        all_tlwhs = []
-        all_ids = []
-        all_classes = []
-        detection_output_xml = {'trackIDs': [], 'boxes': [], 'labels': [], 'scores': []}
 
-        for class_id, tracker in enumerate(trackers):
-            detections_bytetrack = np.array(detections_bytetrack)
-            class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == class_id][:, :5]
-            if class_outputs is not None:
-                online_targets = tracker.update(class_outputs)
-                online_tlwhs = []
-                online_ids = []
-                online_scores = []
-                online_classes = [class_id] * len(online_targets)
-                for t in online_targets:
-                    # tracker box coordinates are given in pixels, not normalised
-                    tlwh = t.tlwh
-                    tlbr = t.tlbr
-                    tid = t.track_id
-                    vertical = tlwh[2] / tlwh[3] > ByteTrackArgument.aspect_ratio_thresh
-                    if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
-                        online_tlwhs.append(tlwh)
-
-                        # use the trackings' output bbox locations to detect objects, with
-                        region_counts = line_counter.perform_count_line_detections(class_id, tid, tlbr)
-
-                        # Get the xml output for saving into annotation file
-                        tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]
-                        detection_output_xml['trackIDs'].append(tid)
-                        detection_output_xml['boxes'].append(tlbr_box)
-                        detection_output_xml['labels'].append(class_id)
-                        detection_output_xml['scores'].append(t.score)
-
-                        online_ids.append(tid)
-                        online_scores.append(t.score)
-                        tlwh_box = (tlwh[0], tlwh[1], tlwh[2], tlwh[3])
-
-                        results.append(
-                            # frame_id, track_id, tl_x, tl_y, w, h, score = obj_prob * class_prob, class_idx, dummy, dummy, dummy
-                            f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}, {class_id}, -1,-1,-1\n"
-                        )
-
-                all_tlwhs += online_tlwhs
-                all_ids += online_ids
-                all_classes += online_classes
-
-        if len(history) < 30:
-            history.append((all_ids, all_tlwhs, all_classes))
-        else:
-            history.popleft()
-            history.append((all_ids, all_tlwhs, all_classes))
-
-        if len(all_tlwhs) > 0:
-            online_im = plot_tracking(
-                frame, history
-            )
-            num_detections = count_tracks(history)
-        else:
-            online_im = frame
+        # all_tlwhs = []
+        # all_ids = []
+        # all_classes = []
+        # detection_output_xml = {'trackIDs': [], 'boxes': [], 'labels': [], 'scores': []}
+        #
+        # for class_id, tracker in enumerate(trackers):
+        #     detections_bytetrack = np.array(detections_bytetrack)
+        #     class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == class_id][:, :5]
+        #     if class_outputs is not None:
+        #         online_targets = tracker.update(class_outputs)
+        #         online_tlwhs = []
+        #         online_ids = []
+        #         online_scores = []
+        #         online_classes = [class_id] * len(online_targets)
+        #         for t in online_targets:
+        #             # tracker box coordinates are given in pixels, not normalised
+        #             tlwh = t.tlwh
+        #             tlbr = t.tlbr
+        #             tid = t.track_id
+        #             vertical = tlwh[2] / tlwh[3] > ByteTrackArgument.aspect_ratio_thresh
+        #             if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
+        #                 online_tlwhs.append(tlwh)
+        #
+        #                 # use the trackings' output bbox locations to detect objects, with
+        #                 region_counts = line_counter.perform_count_line_detections(class_id, tid, tlbr)
+        #
+        #                 # Get the xml output for saving into annotation file
+        #                 tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]
+        #                 detection_output_xml['trackIDs'].append(tid)
+        #                 detection_output_xml['boxes'].append(tlbr_box)
+        #                 detection_output_xml['labels'].append(class_id)
+        #                 detection_output_xml['scores'].append(t.score)
+        #
+        #                 online_ids.append(tid)
+        #                 online_scores.append(t.score)
+        #                 tlwh_box = (tlwh[0], tlwh[1], tlwh[2], tlwh[3])
+        #
+        #                 results.append(
+        #                     # frame_id, track_id, tl_x, tl_y, w, h, score = obj_prob * class_prob, class_idx, dummy, dummy, dummy
+        #                     f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}, {class_id}, -1,-1,-1\n"
+        #                 )
+        #
+        #         all_tlwhs += online_tlwhs
+        #         all_ids += online_ids
+        #         all_classes += online_classes
+        #
+        # if len(history) < 30:
+        #     history.append((all_ids, all_tlwhs, all_classes))
+        # else:
+        #     history.popleft()
+        #     history.append((all_ids, all_tlwhs, all_classes))
+        #
+        # if len(all_tlwhs) > 0:
+        #     online_im = plot_tracking(
+        #         frame, history
+        #     )
+        # else:
+        #     online_im = frame
 
         ################################################################################################################
         ################################################################################################################
         ################################################################################################################
+
+        online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count)
 
         # Extract original frame
         # extract_frame(saved_frame_dir, frame, frame_count, video_name)
@@ -306,5 +305,6 @@ if __name__ == '__main__':
 
     args = setup_argument_parser().parse_args()
     history = deque()
+
     infer_video(args)
 
