@@ -3,7 +3,7 @@ import cv2
 from bytetrackCustom.bytetrack_utils import cross_product_line
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import pandas as pd
-import ast
+
 
 class LineCounter:
     # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
@@ -15,7 +15,7 @@ class LineCounter:
         self.lines_start = [value['start'] for value in self.lines.values()]
         self.lines_end = [value['end'] for value in self.lines.values()]
 
-        self.region_counts = [[0] * len(self.lines)] * len(VEHICLE_CLASSES)
+        self.region_counts = [[0] * len(self.lines) for _ in range(len(VEHICLE_CLASSES))]
         self.previous_side = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
         self.current_side = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
         self.cross_product = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
@@ -35,8 +35,7 @@ class LineCounter:
         ### Calculate centroids in px, count if in regions
         x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
         y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
-        # cv2.line(frame, (int(x_centre), int(y_centre)), line_start[0], line_color, line_thickness)
-        # cv2.line(frame, (int(x_centre), int(y_centre)), line_start[1], (0,0,255), line_thickness)
+
 
         # iterate over user defined boundary lines
         for line_id, (start, end) in enumerate(zip(self.lines_start, self.lines_end)):
@@ -52,14 +51,14 @@ class LineCounter:
             elif self.cross_product[tid][line_id] < 0:
                 self.current_side[tid][line_id] = 'negative'
 
+
             # Check if the object has crossed the line
             if self.previous_side[tid][line_id] != 0:  # check that it isn't a brand new track
                 if self.previous_side[tid][line_id] != self.current_side[tid][line_id]:
-                    print(
-                        f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
+                    print(f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
                     self.region_counts[class_id][line_id]+= 1
             self.previous_side[tid][line_id] = self.current_side[tid][line_id]
-
+        print(self.region_counts[0])
         return self.region_counts
 
 
@@ -91,8 +90,9 @@ def read_lines_from_csv(filePath):
     return lines
 
 
-def process_count(region_counts):
+def process_count(region_counts, classes):
     # Creating a list to store the maximum count for each class
-    max_counts = [max(class_count) for class_count in region_counts]
+    # Mapping class indices to their names in VEHICLE_CLASSES and fetching max count
+    class_max_counts = {VEHICLE_CLASSES[class_id]: max(region_counts[class_id]) for class_id in classes}
+    return class_max_counts
 
-    return max_counts

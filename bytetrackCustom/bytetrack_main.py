@@ -3,7 +3,7 @@ from collections import deque
 import numpy as np
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.bytetrack_args import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import plot_tracking
+from bytetrackCustom.bytetrack_utils import plot_tracking, transform_detection_output
 from helpers.line_counter import LineCounter
 
 
@@ -19,7 +19,7 @@ class ByteTracker:
         self.trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
         self.line_counter = LineCounter(args.lines_data)
         self.history = deque()
-        self.region_counts = None
+        self.region_counts = []
 
 
     def startTrack(self, frame, detections_bytetrack, frame_count):
@@ -29,8 +29,8 @@ class ByteTracker:
         self.results = []
         self.detection_output_xml = {'trackIDs': [], 'boxes': [], 'labels': [], 'scores': []}
 
-        detections_bytetrack = np.array(detections_bytetrack)
         for class_id, tracker in enumerate(self.trackers):
+            detections_bytetrack = np.array(detections_bytetrack)
             class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == class_id][:, :5]
             if class_outputs is not None:
                 online_targets = tracker.update(class_outputs)

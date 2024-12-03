@@ -96,6 +96,7 @@ def setup_argument_parser():
     parser.add_argument(
         '--lines_data',
         default=DEFAULT_LINES_DATA_PATH,
+        choices=["./live_lines.csv"],
         help='Path to CSV file containing lines to be drawn on video'
     )
     return parser

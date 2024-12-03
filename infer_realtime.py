@@ -1,5 +1,4 @@
 from collections import deque
-
 import numpy as np
 import torch
 import torchvision
@@ -7,7 +6,6 @@ import cv2
 import os
 import time
 import argparse
-
 from bytetrackCustom.bytetrack_main import ByteTracker
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from config.argument_config import setup_argument_parser
@@ -30,57 +28,19 @@ Running inference with object tracking with faster R-CNN model
 """
 
 np.random.seed(3101)
-
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
-
-
-
-def load_model():
-    """
-    This function load model faster R-CNN with trained weight file
-    """
-    faster_rcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
-                                                                             min_size=600,
-                                                                             max_size=1000,
-                                                                             box_score_thresh=0.22,
-                                                                             )
-    faster_rcnn_model.roi_heads.box_predictor = FastRCNNPredictor(
-        faster_rcnn_model.roi_heads.box_predictor.cls_score.in_features,
-        num_classes=7)
-
-    faster_rcnn_model.eval()
-    faster_rcnn_model.to(device)
-
-    faster_rcnn_model.load_state_dict(torch.load(
-        '../vtod/tv_frcnn_r50fpn_faster_rcnn_vtod.pth',
-        map_location=device))
-
-    return faster_rcnn_model
-
-
 results = []
+
+
 def infer_video(args):
     """
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-    # main_tracker = ByteTracker(args)
-
-
-    # Define the line (start and end points)
-    #todo read in lines from svg file
-    #todo create some way of pairing the lines into A and B hoses
-    #todo function which reads lines from svg or csv, and outputs arrays of line_start and line_end points,
-
-
-    #(630, 200), (300, 450)
-
-    trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
     main_tracker = ByteTracker(args)
-
 
     print(f"Tracking: {[COCO_91_CLASSES[idx] for idx in args.classes_to_track]}")
     print(f"Detector: {args.pretrained_model}")
@@ -88,18 +48,15 @@ def infer_video(args):
 
     # Load model.
     model = getattr(torchvision.models.detection, args.pretrained_model)(weights='DEFAULT')
-    #model = load_model()
 
     # Set model to evaluation mode.
     model.eval().to(device)
 
-
     VIDEO_PATH = args.input_video
-    cap = cv2.VideoCapture(VIDEO_PATH)
+    cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
-    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
     saved_frame_dir = 'inference_dataset/images/'
     saved_annotated_frame_dir = 'inference_dataset/annotated_images'
@@ -111,27 +68,7 @@ def infer_video(args):
         (frame_width, frame_height)
     )
 
-
     frame_count = 0  # To count total frames.
-
-    # # Get the video's FPS (frames per second)
-    # fps = cap.get(cv2.CAP_PROP_FPS)
-    #
-    # # Set the frame interval to capture one frame every 3 seconds
-    # frame_interval = int(fps * 3)  # For 30 FPS, this equals 90 frames being skipped before one is saved
-
-    # previous_side = None
-    # start_point_normalized = ((line_start[0] / frame_width), (line_start[1] / frame_height))
-    # end_point_normalized = ((line_end[0] / frame_width), (line_end[1] / frame_height))
-
-    # global cross_product
-    # global current_side
-    # global previous_side
-    # previous_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-    # current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-    # cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-
-    region_counts = []
 
     line_counter = LineCounter(args.lines_data)
 
@@ -172,17 +109,12 @@ def infer_video(args):
         # Transform detection output to ones to be used by bytetracker - xyxy px,
         detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
 
-
         if detections_bytetrack.dim() > 1:
             online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count)
         else:
             online_im = frame
             region_counts = []
-
-        ################################################################################################################
-        ################################################################################################################
-        ################################################################################################################
-
+            # Exception(detections_bytetrack)
 
         # Extract original frame
         # extract_frame(saved_frame_dir, frame, frame_count, video_name)
@@ -191,18 +123,17 @@ def infer_video(args):
         # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
         # Saved annotated vehicles from the image.
-        standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
+        standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name,
+                           frame_width, frame_height)
         # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
-
-        class_count_dict = process_count(region_counts, args.classes_to_track)
 
         # Extract annotated frame
         # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
 
         frame_count += 1
 
-        print(f"Frame {frame_count}/{frames}",
-                f"Detection FPS: {det_fps:.1f}")
+        print(f"Frame {frame_count}",
+              f"Detection FPS: {det_fps:.1f}")
 
         cv2.putText(
             online_im,
@@ -211,25 +142,22 @@ def infer_video(args):
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=1,
             color=(0, 0, 255),
-            thickness=1,
+            thickness=2,
             lineType=cv2.LINE_AA
         )
 
-        # Display each class with its count
-        y_position = 80  # Starting y-position for text display
-        for class_name, count in class_count_dict.items():
-            cv2.putText(
-                online_im,
-                f"{class_name}: {count}",
-                (int(20), int(y_position)),
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=0.5,  # Smaller font size
-                color=(255, 0, 0),  # Blue color: (B, G, R)
-                thickness=1,
-                lineType=cv2.LINE_AA
-            )
-            y_position += 20  # Move down for the next class
+        count = process_count(region_counts)
 
+        cv2.putText(
+            online_im,
+            f"Count of cars:  {count[3] if len(region_counts)>0 else 0}",  # {region_counts:.1f}
+            (int(20), int(60)),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.7,
+            color=(255, 165, 10),
+            thickness=2,
+            lineType=cv2.LINE_AA
+        )
 
         out.write(online_im)
 
@@ -249,7 +177,6 @@ def infer_video(args):
 
 
 if __name__ == '__main__':
-
     args = setup_argument_parser().parse_args()
     history = deque()
 
