@@ -12,6 +12,7 @@ from bytetrackCustom.bytetrack_main import ByteTracker
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from config.argument_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count, read_lines_from_csv
+from helpers.save_count_data import create_count_files
 from helpers.standardize_detections import standardize_to_txt
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
@@ -75,10 +76,10 @@ def infer_video(args):
     #todo create some way of pairing the lines into A and B hoses
     #todo function which reads lines from svg or csv, and outputs arrays of line_start and line_end points,
 
+    count_filepath = create_count_files(args)
 
     #(630, 200), (300, 450)
 
-    trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
     main_tracker = ByteTracker(args)
 
 
@@ -120,16 +121,6 @@ def infer_video(args):
     # # Set the frame interval to capture one frame every 3 seconds
     # frame_interval = int(fps * 3)  # For 30 FPS, this equals 90 frames being skipped before one is saved
 
-    # previous_side = None
-    # start_point_normalized = ((line_start[0] / frame_width), (line_start[1] / frame_height))
-    # end_point_normalized = ((line_end[0] / frame_width), (line_end[1] / frame_height))
-
-    # global cross_product
-    # global current_side
-    # global previous_side
-    # previous_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-    # current_side = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
-    # cross_product = [[0 for _ in range(len(lines_end))] for _ in range(10000)]
 
     class_count_dict = {"human": 0,
                         "vehicle type 1 - bicycle": 0,
@@ -179,7 +170,7 @@ def infer_video(args):
 
         if len(detections_bytetrack)>0:
         # if detections_bytetrack.dim() > 1:
-            online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count)
+            online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count, count_filepath)
             class_count_dict = process_count(region_counts, args.classes_to_track)
         else:
             online_im = frame

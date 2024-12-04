@@ -3,9 +3,10 @@ from collections import deque
 import numpy as np
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.bytetrack_args import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import plot_tracking, transform_detection_output
+from bytetrackCustom.bytetrack_utils import plot_tracking
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from helpers.line_counter import LineCounter
+from helpers.save_count_data import save_count_data
 
 
 class ByteTracker:
@@ -16,21 +17,17 @@ class ByteTracker:
         self.all_classes = None
         self.all_ids = None
         self.all_tlwhs = None
-        self.trackers = [BYTETracker(ByteTrackArgument) for _ in range(14)]
+        self.trackers = [BYTETracker(ByteTrackArgument) for _ in range(9)]
         self.line_counter = LineCounter(args.lines_data)
 
         self.history = deque()
         self.region_counts = [[0] * len(self.line_counter.lines) for _ in range(len(VEHICLE_CLASSES))]
-        self.live = args.live
-
-        if args.live:
-            self.video_name = "Cam1"
-        else:
-            self.video_name = args.input_video.split('/')[-1].split('.')[0]
+        self.direction_list = ["_" for _ in range(10000)]
+        self.args = args
 
 
 
-    def startTrack(self, frame, detections_bytetrack, frame_count):
+    def startTrack(self, frame, detections_bytetrack, frame_count, count_filepath):
         self.all_tlwhs = []
         self.all_ids = []
         self.all_classes = []
@@ -40,7 +37,7 @@ class ByteTracker:
         for class_id, tracker in enumerate(self.trackers):
             detections_bytetrack = np.array(detections_bytetrack)
             class_outputs = detections_bytetrack[detections_bytetrack[:, 5] == class_id][:, :5]
-            if class_outputs is not None:
+            if len(class_outputs)>0:
                 online_targets = tracker.update(class_outputs)
                 online_tlwhs = []
                 online_ids = []
@@ -56,7 +53,10 @@ class ByteTracker:
                         online_tlwhs.append(tlwh)
 
                         # use the trackings' output bbox locations to detect objects, with
-                        self.region_counts = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, self.video_name)
+                        self.region_counts, self.direction_list = self.line_counter.perform_count_line_detections(class_id, tid, tlbr)
+
+                        save_count_data(self.args, count_filepath, self.region_counts, self.direction_list, class_id, tid, frame_count)
+
 
                         # Get the xml output for saving into annotation file
                         tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]

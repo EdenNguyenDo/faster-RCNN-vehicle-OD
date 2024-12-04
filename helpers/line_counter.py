@@ -11,10 +11,29 @@ import pandas as pd
 
 class LineCounter:
     # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
+    """
 
+    """
     def __init__(self, filePath):
         # Lines will be stored as a dictionary with keys as identifiers
         # and values as tuples containing start and end points.
+        """
+        region_counts
+        previous_side
+        current_side
+        cross_product
+
+
+        Initializes data structures for handling and processing line data from a CSV file.
+        The class is designed to store information about lines with specific start and end
+        points, manage vehicle categorization data, and set configurations for visual
+        representation of the lines.
+
+        :param filePath: The path to the CSV file containing line data. The file must be
+                         structured in a way that each line contains an identifier and
+                         associated start and end point coordinates.
+        :type filePath: str
+        """
         self.lines = read_lines_from_csv(filePath)
         self.lines_start = [value['start'] for value in self.lines.values()]
         self.lines_end = [value['end'] for value in self.lines.values()]
@@ -23,6 +42,7 @@ class LineCounter:
         self.previous_side = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
         self.current_side = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
         self.cross_product = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
+        self.direction_list = ["_" for _ in range(10000)]
 
         self.line_color = (0, 255, 0)  # Green line color
         self.line_thickness = 2
@@ -34,7 +54,7 @@ class LineCounter:
         for start, end in zip(self.lines_start, self.lines_end):
             cv2.line(frame, start, end, color=(0, 255, 0), thickness=2)
 
-    def perform_count_line_detections(self, class_id, tid, tlbr, video_name):
+    def perform_count_line_detections(self, class_id, tid, tlbr):
         # Line intersection/counting section
         ### Calculate centroids in px, count if in regions
         x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
@@ -56,34 +76,22 @@ class LineCounter:
                 if self.previous_side[tid][line_id] != self.current_side[tid][line_id]:
                     print(f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
                     self.region_counts[class_id][line_id]+= 1
+                    # todo: extract direction
+                    # Determine direction based on changes
+                    if self.previous_side[tid][line_id] == 'negative' and self.current_side[tid][line_id] == 'positive':
+                        direction = 'N to P'
+                    elif self.previous_side[tid][line_id] == 'positive' and self.current_side[tid][
+                        line_id] == 'negative':
+                        direction = 'P to N'
+                    else:
+                        direction = "_"  # No crossing detected
+
+                    # Store the direction in a list
+                    self.direction_list[tid] = direction
             self.previous_side[tid][line_id] = self.current_side[tid][line_id]
 
 
-
-        output_dir = os.path.join('./saved_counts/', video_name)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        # Prepare data for the CSV file
-        timestamp = f"{time.time():.3f}"  # Get current time and format to 3 decimal places
-        filename = f"{video_name}_{timestamp}.csv"
-
-        filepath = os.path.join(output_dir, filename)
-
-
-        # Collect data to write
-        data_to_write = []
-        for class_id, item in enumerate(self.region_counts):
-            for count in item:
-                line_id = index(count)
-                data_to_write.append([tid, class_id, line_id, count])
-
-        # Write the data to a CSV file
-        with open(filepath, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(["track_id", "class_id", "line_id", "current_count"])  # Write header
-            writer.writerows(data_to_write)  # Write data rows
-
-        return self.region_counts
+        return self.region_counts, self.direction_list
 
 
 
