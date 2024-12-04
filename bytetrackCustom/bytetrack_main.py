@@ -23,6 +23,7 @@ class ByteTracker:
         self.history = deque()
         self.region_counts = [[0] * len(self.line_counter.lines) for _ in range(len(VEHICLE_CLASSES))]
         self.direction_list = ["_" for _ in range(10000)]
+        self.lane_list = ["_" for _ in range(10000)]
         self.args = args
 
 
@@ -53,10 +54,10 @@ class ByteTracker:
                         online_tlwhs.append(tlwh)
 
                         # use the trackings' output bbox locations to detect objects, with counts and direction detection
-                        self.region_counts, self.direction_list = self.line_counter.perform_count_line_detections(class_id, tid, tlbr)
+                        self.region_counts, self.direction_list, self.lane_list = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, frame)
 
                         # save the count into the file
-                        save_count_data(self.args, count_filepath, self.region_counts, self.direction_list, class_id, tid, frame_count)
+                        save_count_data(self.args, count_filepath, self.region_counts, self.direction_list, self.lane_list, class_id, tid, frame_count)
 
 
                         # Get the xml output for saving into annotation file

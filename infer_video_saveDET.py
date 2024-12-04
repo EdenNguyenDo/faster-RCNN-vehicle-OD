@@ -17,7 +17,7 @@ from helpers.standardize_detections import standardize_to_txt
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, cross_product_line
+from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
 
 """
 Running inference with object tracking with faster R-CNN model

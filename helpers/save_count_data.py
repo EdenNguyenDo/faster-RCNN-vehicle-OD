@@ -38,7 +38,7 @@ def create_count_files(args):
 
 
 
-def save_count_data(args, filepath, region_counts, direction, class_id, track_id, frame_number):
+def save_count_data(args, filepath, region_counts, direction, lanes, class_id, track_id, frame_number):
     """
     This function saves the counts into the file created by the function above
 
@@ -71,7 +71,8 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
             class_id,
             track_id,
             line_id,
-            direction[track_id],  # Access direction through track_id
+            direction[track_id],
+            lanes[track_id], # Access direction and lanes through track_id
             count
         ])
 
@@ -82,6 +83,6 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
         writer = csv.writer(file)
         # Write header only if the file does not exist or is empty
         if file.tell() == 0:
-            writer.writerow(["timestamp", "class_id", "track_id", "line_id", "direction", "count"])
+            writer.writerow(["timestamp", "class_id", "track_id", "line_id", "direction", "lane", "count"])
         writer.writerows(data_to_write)  # Write data rows
 

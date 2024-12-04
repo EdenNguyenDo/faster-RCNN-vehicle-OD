@@ -123,20 +123,3 @@ def transform_detection_output(detections, classes):
     outputs = torch.tensor(outputs, dtype=torch.float32)
 
     return outputs
-
-def cross_product_line(point, line_start, line_end):
-    # Calculate the direction vector of the line
-    dx = line_end[0] - line_start[0]
-    dy = line_end[1] - line_start[1]
-
-    # Vector from line start to the point
-    # dpx = point[0] - line_start[0]
-    # dpy = point[1] - line_start[1]
-    dpx = line_end[0] - point[0]
-    dpy = line_end[1] - point[1]
-    #cx=0; cy=0; cz=
-
-    # Cross product to determine which side of the line the point is on
-    cross_product = dx * dpy - dy * dpx
-
-    return cross_product

@@ -19,7 +19,7 @@ from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from bytetrackCustom.bytetrack_args import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, cross_product_line
+from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
 
 """
 Running inference with object tracking with faster R-CNN model
@@ -122,7 +122,7 @@ def infer_video(args):
 
             # Transform detection output to ones to be used by bytetracker - xyxy px,
             detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
-            print(time.time())
+
             if len(detections_bytetrack) > 0:
                 # if detections_bytetrack.dim() > 1:
                 online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count,
