@@ -52,9 +52,10 @@ class ByteTracker:
                     if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
                         online_tlwhs.append(tlwh)
 
-                        # use the trackings' output bbox locations to detect objects, with
+                        # use the trackings' output bbox locations to detect objects, with counts and direction detection
                         self.region_counts, self.direction_list = self.line_counter.perform_count_line_detections(class_id, tid, tlbr)
 
+                        # save the count into the file
                         save_count_data(self.args, count_filepath, self.region_counts, self.direction_list, class_id, tid, frame_count)
 
 
