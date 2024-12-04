@@ -1,4 +1,5 @@
 import csv
+import json
 from collections import deque
 import numpy as np
 import torch
@@ -42,7 +43,8 @@ def infer_video(args):
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-    count_filepath = create_count_files(args)
+    args.lines_data = "./live_lines.csv"
+    count_filepath, total_count_filepath = create_count_files(args)
 
     main_tracker = ByteTracker(args)
 
@@ -126,6 +128,10 @@ def infer_video(args):
                 online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count,
                                                                    count_filepath)
                 class_count_dict = process_count(region_counts, args.classes_to_track)
+
+                # Write the total count dictionary to the JSON file, overwriting existing total counts
+                with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
+                    json.dump(class_count_dict, json_file, indent=4, ensure_ascii=False)
             else:
                 online_im = frame
 

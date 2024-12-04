@@ -5,6 +5,8 @@ import time
 """
 This script saves count data in a format that is needed for analysis
 """
+
+
 def create_count_files(args):
     """
     This function create count files for a video inference.
@@ -20,12 +22,19 @@ def create_count_files(args):
         video_name = args.input_video.split('/')[-1].split('.')[0]
         date_video_name = video_name + "_" + formatted_time
     else:
-        date_video_name = "cam1_" + formatted_time
+        video_name = "cam1"
+        date_video_name = video_name + "_" + formatted_time
+
+    directory_path = os.path.join('./saved_counts/', video_name)
+    os.makedirs(directory_path, exist_ok=True)
 
     filename = f"{date_video_name}_counts.csv"
-    filepath = os.path.join('./saved_counts/', filename)
+    json_filename = f"{date_video_name}_total_counts.json"
 
-    return filepath
+    filepath = os.path.join(directory_path, filename)
+    json_filepath = os.path.join(directory_path, json_filename)
+
+    return filepath, json_filepath
 
 
 

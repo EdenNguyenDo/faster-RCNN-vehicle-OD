@@ -1,6 +1,6 @@
 import csv
 from collections import deque
-
+import json
 import numpy as np
 import torch
 import torchvision
@@ -70,7 +70,7 @@ def infer_video(args):
 
     global completed_successfully
     args.live = False
-    count_filepath = create_count_files(args)
+    count_filepath,total_count_filepath = create_count_files(args)
 
     #(630, 200), (300, 450)
 
@@ -168,6 +168,10 @@ def infer_video(args):
             # if detections_bytetrack.dim() > 1:
                 online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count, count_filepath)
                 class_count_dict = process_count(region_counts, args.classes_to_track)
+
+                # Write the dictionary to the JSON file, overwriting any existing data
+                with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
+                    json.dump(class_count_dict, json_file, indent=4, ensure_ascii=False)
             else:
                 online_im = frame
 
@@ -218,7 +222,7 @@ def infer_video(args):
                 y_position += 20  # Move down for the next class
 
             frame_count += 1
-
+            print(class_count_dict)
             print(f"Frame {frame_count}/{frames}",
                   f"Detection FPS: {det_fps:.1f}")
 
