@@ -45,7 +45,7 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
     live = args.live
     if not live:
         video_name = args.input_video.split('/')[-1].split('.')[0]
-        timestamp = str(video_name)+str(frame_number*30)
+        timestamp = f"{video_name}_{frame_number/30})"
     else:
         current_time = time.localtime()
         formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)

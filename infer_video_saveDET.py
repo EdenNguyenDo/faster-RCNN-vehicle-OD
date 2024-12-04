@@ -7,19 +7,16 @@ import torchvision
 import cv2
 import os
 import time
-import argparse
 
 from bytetrackCustom.bytetrack_main import ByteTracker
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from config.argument_config import setup_argument_parser
-from helpers.line_counter import LineCounter, process_count, read_lines_from_csv
+from helpers.line_counter import LineCounter, process_count
 from helpers.save_count_data import create_count_files
 from helpers.standardize_detections import standardize_to_txt
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
-from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
-from bytetrackCustom.bytetrack_args import ByteTrackArgument
 from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks, cross_product_line
 
 """
@@ -70,11 +67,8 @@ def infer_video(args):
     Then each individual frame is aggregated to create an annotated video.
     """
 
-    # Define the line (start and end points)
-    #todo read in lines from svg file
-    #todo create some way of pairing the lines into A and B hoses
-    #todo function which reads lines from svg, and outputs arrays of line_start and line_end points,
 
+    global completed_successfully
     args.live = False
     count_filepath = create_count_files(args)
 
@@ -89,7 +83,6 @@ def infer_video(args):
 
     # Load model.
     model = getattr(torchvision.models.detection, args.pretrained_model)(weights='DEFAULT')
-    #model = load_model()
 
     # Set model to evaluation mode.
     model.eval().to(device)

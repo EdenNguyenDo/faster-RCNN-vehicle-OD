@@ -11,6 +11,9 @@ import pandas as pd
 
 class LineCounter:
     # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
+    #todo read in lines from svg file
+    #todo create some way of pairing the lines into A and B hoses
+    #todo function which reads lines from svg, and outputs arrays of line_start and line_end points,
     """
 
     """
