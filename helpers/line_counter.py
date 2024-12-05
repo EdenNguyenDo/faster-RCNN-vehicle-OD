@@ -3,8 +3,11 @@ import os
 import time
 from operator import index
 from statistics import median
+from unittest.mock import DEFAULT
 
 import cv2
+import numpy as np
+
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import pandas as pd
 from collections import namedtuple
@@ -50,6 +53,8 @@ class LineCounter:
         current_side
         cross_product
 
+        The line data file name would shows the number of count lines, boundary line and reserve line respectively
+        separated by underscore '_'.
 
         Initializes data structures for handling and processing line data from a CSV file.
         The class is designed to store information about lines with specific start and end
@@ -61,15 +66,18 @@ class LineCounter:
                          associated start and end point coordinates.
         :type filePath: str
         """
-        self.lines = read_lines_from_csv(filePath)
-        self.lines_start = [value['start'] for value in self.lines.values()]
-        self.lines_end = [value['end'] for value in self.lines.values()]
+        self.lines, self.count_lines,self.bound_lines, self.res_lines  = read_lines_from_csv(filePath)
+        self.lines_start = []
+        self.lines_end = []
+        for value in self.lines.values():
+            self.lines_start.append(value['start'])
+            self.lines_end.append(value['end'])
 
         self.Line = namedtuple("Line", ["start", "end"])
         # Store intersections in the class
         self.line_intersections = self.compute_line_intersections(self.lines)
 
-        self.region_counts = [[0] * len(self.lines) for _ in range(len(VEHICLE_CLASSES))]
+        self.region_counts = [[0 for _ in range(self.count_lines)] for _ in range(len(VEHICLE_CLASSES))]
         self.previous_side = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
         self.current_side = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
         self.cross_product = [[0 for _ in range(len(self.lines))] for _ in range(10000)]
@@ -87,78 +95,115 @@ class LineCounter:
             cv2.line(frame, start, end, color=(0, 255, 0), thickness=2)
 
     def perform_count_line_detections(self, class_id, tid, tlbr, frame):
+        """
+        This method perform counting if the object passed the count lines
+        Then direction is extracted based on the side change
+
+        The lane detection assuming the furthest lane is 1 and increments as the lane get closer
+        The boundary lines index has the same logic.
+
+        There will always be just 2 reserve lines in total for each of the side in a road.
+
+        The lane numbering logic is based on the index of the cross product result when the sign changed.
+        i.e. (-,+,+) change index is 1 and the lane where the box centre stands, is also 1.
+
+        :param class_id:
+        :param tid:
+        :param tlbr:
+        :param frame:
+        :return:
+        """
         # Line intersection/counting section
         ### Calculate centroids in px, count if in regions
         global lane
         x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
         y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
 
+
+        """
+        This loop performs counting by computing cross product between count lines end point and box centre
+        """
         # iterate over user defined count lines
         # Compute the cross product for the center of box vector with the first 2 lines
-        for line_id in range(2):
-            start, end = self.lines_start[line_id], self.lines_end[line_id]
-            self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
+        for count_line_id in range(self.count_lines):
+            start, end = self.lines_start[count_line_id], self.lines_end[count_line_id]
+            self.cross_product[tid][count_line_id] = cross_product_line((x_centre, y_centre), start, end)
 
-            cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
-
-            if self.cross_product[tid][line_id] >= 0:
-                self.current_side[tid][line_id] = 'positive'
-            elif self.cross_product[tid][line_id] < 0:
-                self.current_side[tid][line_id] = 'negative'
+            # cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
+            if self.cross_product[tid][count_line_id] >= 0:
+                self.current_side[tid][count_line_id] = 'positive'
+            elif self.cross_product[tid][count_line_id] < 0:
+                self.current_side[tid][count_line_id] = 'negative'
 
             # Check if the object has crossed the line
-            if self.previous_side[tid][line_id] != 0:  # check that it isn't a new track
-                if self.previous_side[tid][line_id] != self.current_side[tid][line_id]:
-                    print(f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
-                    self.region_counts[class_id][line_id] += 1
+            if self.previous_side[tid][count_line_id] != 0:  # check that it isn't a new track
+                if self.previous_side[tid][count_line_id] != self.current_side[tid][count_line_id]:
+                    print(f"Object {class_id} has crossed the line with id {count_line_id}! Final side: {self.current_side[tid][count_line_id]}")
+                    self.region_counts[class_id][count_line_id] += 1
 
             # Determine direction based on changes
-            if self.previous_side[tid][line_id] == 'negative' and self.current_side[tid][line_id] == 'positive':
+            if self.previous_side[tid][count_line_id] == 'negative' and self.current_side[tid][count_line_id] == 'positive':
                 self.direction_list[tid] = 'N to P (L-R)'
-            elif self.previous_side[tid][line_id] == 'positive' and self.current_side[tid][line_id] == 'negative':
+            elif self.previous_side[tid][count_line_id] == 'positive' and self.current_side[tid][count_line_id] == 'negative':
                 self.direction_list[tid] = 'P to N (R-L)'
             else:
                 self.direction_list[tid] = "_"  # No crossing detected
-            self.previous_side[tid][line_id] = self.current_side[tid][line_id]
+            self.previous_side[tid][count_line_id] = self.current_side[tid][count_line_id]
 
-        # Check the latter 3 lines after a side change
-        for line_id in range(2, 5):
 
-            start, end = self.lines_start[line_id], self.lines_end[line_id]
-            self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
 
+        """
+        This loop computes cross product between end point of boundary lines and box centre
+        """
+        bound_list_CP = []
+        # Check the boundary lines
+        for bound_line_id in range(self.count_lines, self.bound_lines*2-1):
+            start, end = self.lines_start[bound_line_id], self.lines_end[bound_line_id]
+            self.cross_product[tid][bound_line_id] = cross_product_line((x_centre, y_centre), start, end)
             cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
+            bound_list_CP.append(self.cross_product[tid][bound_line_id])
 
 
-        # Determine lane classification based on the cross product for the latter 3 lines
-        if ((self.cross_product[tid][2] < 0 and
-                self.cross_product[tid][3] < 0 and
-                self.cross_product[tid][4] > 0) or
-                (self.cross_product[tid][2] < 0 and
-                self.cross_product[tid][3] > 0 and
-                self.cross_product[tid][4] > 0)):
-            lane = 'left'
-            self.lane_list[tid] = lane
+        """
+        This loop performs lane detection and numbering using cross product
+        """
+        current_sign = 'DEFAULT_sign'
+        for cp in bound_list_CP:
+            index_cp = bound_list_CP.index(cp)
+            next_sign = int(np.sign(cp))
+            # If there is a sign differences (-,+,+) or (-,-,+) and it is not the first number
+            if next_sign != current_sign and current_sign != 'DEFAULT_sign' :
+                # changed_idx will defo start at 1
+                # changed_idx determines lanes number
+                changed_idx = index_cp
+                self.lane_list[tid] = changed_idx
 
-        elif ((self.cross_product[tid][2] > 0 and
-              self.cross_product[tid][3] > 0 and
-              self.cross_product[tid][4] < 0) or
-              (self.cross_product[tid][2] > 0 and
-             self.cross_product[tid][3] < 0 and
-             self.cross_product[tid][4] < 0)):
-            lane = 'right'
-            self.lane_list[tid] = lane
-        elif ((self.cross_product[tid][2] > 0 and
-              self.cross_product[tid][3] > 0 and
-              self.cross_product[tid][4] > 0) or
-              (self.cross_product[tid][2] < 0 and
-             self.cross_product[tid][3] < 0 and
-             self.cross_product[tid][4] < 0)):
-            lane = 'centre of box outside the grid'
-            self.lane_list[tid] = lane
+                # If there is a sign difference, break and assure that the lanes is determined
+                break
+            elif next_sign == 0:
+                self.lane_list[tid] = f"this vehicle is in the middle of two lanes: {index_cp} and {index_cp-1}"
+            else:
+                current_sign = next_sign
+                all_sign = next_sign
         else:
-            lane = 'unknown'
-            self.lane_list[tid] = lane
+            # We know that the centre of box is outside the boundaries
+            # Use reserve lines for checking
+            # If all positive, use line 1 (further). Otherwise line 2 (closer)
+            if int(all_sign) == 1:
+                start, end = self.lines_start[-2], self.lines_end[-2]
+                additional_CP = cross_product_line((x_centre, y_centre), start, end)
+                if additional_CP > 0:
+                    self.lane_list[tid] = f"this vehicle is outside the lanes on the FURTHER side"
+                else:
+                    self.lane_list[tid] = 1
+            if int(all_sign) == -1:
+                start, end = self.lines_start[-1], self.lines_end[-1]
+                additional_CP = cross_product_line((x_centre, y_centre), start, end)
+                if additional_CP < 0:
+                    self.lane_list[tid] = f"this vehicle is outside the lanes on the CLOSER side"
+                else:
+                    self.lane_list[tid] = self.bound_lines - 1
+
 
         return self.region_counts, self.direction_list, self.lane_list
 
@@ -202,6 +247,10 @@ def cross_product_line(point, line_start, line_end):
 def read_lines_from_csv(filePath):
     lines = {}
     reader = pd.read_csv(filePath)
+    fileName_arr = filePath.split('/')[-1].split('.')[0].split('_')
+    res_line_count = int(fileName_arr[-1])
+    bound_line_count = int(fileName_arr[-2])
+    count_line_count = int(fileName_arr[-3])
     for index, row in reader.iterrows():
         try:
             # Direct use of the line_id from the CSV without 'line' prefix
@@ -217,11 +266,12 @@ def read_lines_from_csv(filePath):
                 'end': (int(endX), int(endY))
             }
 
+
         except KeyError as e:
             print(f"Missing expected column in row {index}: {e}")
         except ValueError as e:
             print(f"Invalid data format in row {index}: {e}")
-    return lines
+    return lines, count_line_count, bound_line_count, res_line_count
 
 
 def process_count(region_counts, classes):
