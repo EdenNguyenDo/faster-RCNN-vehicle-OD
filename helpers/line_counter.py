@@ -13,28 +13,6 @@ import pandas as pd
 from collections import namedtuple
 
 
-def intersection(line1, line2):
-    # Calculates the intersection point of two lines
-    x1, y1 = line1.start
-    x2, y2 = line1.end
-    x3, y3 = line2.start
-    x4, y4 = line2.end
-
-    denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
-    if denom == 0:
-        return None  # Lines are parallel
-
-    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
-    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
-
-    if 0 <= ua <= 1 and 0 <= ub <= 1:
-        # Calculate the intersection point
-        x = x1 + ua * (x2 - x1)
-        y = y1 + ua * (y2 - y1)
-        return (round(x,3), round(y,3))
-    else:
-        return None  # No intersection within the line segments
-
 
 class LineCounter:
     # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
@@ -53,8 +31,10 @@ class LineCounter:
         current_side
         cross_product
 
-        The line data file name would shows the number of count lines, boundary line and reserve line respectively
+        The line data file name would contain the number of count lines, boundary lines and reserve lines respectively
         separated by underscore '_'.
+
+
 
         Initializes data structures for handling and processing line data from a CSV file.
         The class is designed to store information about lines with specific start and end
@@ -94,6 +74,7 @@ class LineCounter:
         for start, end in zip(self.lines_start, self.lines_end):
             cv2.line(frame, start, end, color=(0, 255, 0), thickness=2)
 
+
     def perform_count_line_detections(self, class_id, tid, tlbr, frame):
         """
         This method perform counting if the object passed the count lines
@@ -107,11 +88,25 @@ class LineCounter:
         The lane numbering logic is based on the index of the cross product result when the sign changed.
         i.e. (-,+,+) change index is 1 and the lane where the box centre stands, is also 1.
 
-        :param class_id:
-        :param tid:
-        :param tlbr:
-        :param frame:
-        :return:
+
+        Analyzes the trajectory of objects in a video frame to determine if they cross
+        pre-defined lines, which may represent lanes or counting boundaries. The method
+        calculates object centroids and uses cross product operations to determine
+        intersections with count lines and boundary lines. Based on these calculations,
+        it updates the count of objects that have crossed specific lines, detects the
+        direction of movement, and assigns lane numbers to tracked objects.
+
+        :param class_id: Identifier for the class of the detected object
+        :type class_id: int
+        :param tid: Unique track identifier for the detected object
+        :type tid: int
+        :param tlbr: Tuple representing the top-left and bottom-right coordinates of the object
+        :type tlbr: tuple
+        :param frame: Current video frame where objects are detected
+        :type frame: np.ndarray
+        :return: A tuple containing updated region counts, direction list, and lane list
+                 for tracked objects
+        :rtype: tuple
         """
         # Line intersection/counting section
         ### Calculate centroids in px, count if in regions
@@ -196,7 +191,7 @@ class LineCounter:
                     self.lane_list[tid] = f"this vehicle is outside the lanes on the FURTHER side"
                 else:
                     self.lane_list[tid] = 1
-            if int(all_sign) == -1:
+            elif int(all_sign) == -1:
                 start, end = self.lines_start[-1], self.lines_end[-1]
                 additional_CP = cross_product_line((x_centre, y_centre), start, end)
                 if additional_CP < 0:
@@ -224,6 +219,29 @@ class LineCounter:
 
         return intersections
 
+
+
+def intersection(line1, line2):
+    # Calculates the intersection point of two lines
+    x1, y1 = line1.start
+    x2, y2 = line1.end
+    x3, y3 = line2.start
+    x4, y4 = line2.end
+
+    denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
+    if denom == 0:
+        return None  # Lines are parallel
+
+    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
+    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
+
+    if 0 <= ua <= 1 and 0 <= ub <= 1:
+        # Calculate the intersection point
+        x = x1 + ua * (x2 - x1)
+        y = y1 + ua * (y2 - y1)
+        return (round(x,3), round(y,3))
+    else:
+        return None  # No intersection within the line segments
 
 
 def cross_product_line(point, line_start, line_end):

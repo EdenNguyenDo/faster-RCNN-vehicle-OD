@@ -11,6 +11,41 @@ from helpers.save_count_data import save_count_data
 
 class ByteTracker:
 
+    """
+    Class for tracking objects across video frames using BYTE tracking algorithm.
+
+    This class processes video frames to track and count objects as well as perform
+    lane detection. It utilizes multiple BYTETrackers, one for each class, and
+    integrates detection outputs with tracking results. The tracking history is
+    maintained to visualize the tracking results.
+
+    :ivar detection_output_xml: Storage for tracking results in XML format.
+    :type detection_output_xml: dict
+    :ivar results: List of formatted string results for tracked objects.
+    :type results: list
+    :ivar all_classes: List of all object classes detected in current frame.
+    :type all_classes: list
+    :ivar all_ids: List of all object IDs tracked in current frame.
+    :type all_ids: list
+    :ivar all_tlwhs: List of all bounding box coordinates (top-left width-height)
+        for tracked objects.
+    :type all_tlwhs: list
+    :ivar trackers: List of BYTETracker objects, one for each object class to be tracked.
+    :type trackers: list
+    :ivar line_counter: Object responsible for counting lines crossings and lane detecting by tracked objects.
+    :type line_counter: LineCounter
+    :ivar history: Deque maintaining tracking history of objects for visualization purposes.
+    :type history: collections.deque
+    :ivar region_counts: Array tracking the count of objects detected in predefined regions.
+    :type region_counts: list
+    :ivar direction_list: List maintaining directional data for each tracked object.
+    :type direction_list: list
+    :ivar lane_list: List maintaining lane assignment data for each tracked object.
+    :type lane_list: list
+    :ivar args: Arguments passed to the tracker, typically containing configuration settings.
+    :type args: Any
+    """
+
     def __init__(self, args):
         self.detection_output_xml = None
         self.results = None
@@ -21,7 +56,7 @@ class ByteTracker:
         self.line_counter = LineCounter(args.lines_data)
 
         self.history = deque()
-        self.region_counts = [[0] * len(self.line_counter.lines) for _ in range(len(VEHICLE_CLASSES))]
+        self.region_counts = [[0 for _ in range(self.line_counter.count_lines)] for _ in range(len(VEHICLE_CLASSES))]
         self.direction_list = ["_" for _ in range(10000)]
         self.lane_list = ["_" for _ in range(10000)]
         self.args = args
@@ -29,6 +64,24 @@ class ByteTracker:
 
 
     def startTrack(self, frame, detections_bytetrack, frame_count, count_filepath):
+        """
+        Starts the tracking process for identified objects in a video frame. It updates
+        trackers for each object class, processes the detection outputs, counts objects,
+        and generates tracking results for visualization and further analysis.
+        Additionally, it saves detection and tracking information for further usage.
+
+        :param frame: Video frame data for the current time step in the tracking process.
+        :param detections_bytetrack: Array containing transformed detections made by the faster R-CNN model
+            for the current frame, where each detection includes bounding box coordinates,
+            confidence scores, and class identifiers.
+        :param frame_count: Integer representing the current frame count, used to track the
+            frame number during the sequence.
+        :param count_filepath: The file path where the object count data is stored and
+            updated as new frames are processed.
+        :return: A tuple containing:
+            - The updated video frame with tracking information visualized.
+            - Current counts of objects tracked per line.
+        """
         self.all_tlwhs = []
         self.all_ids = []
         self.all_classes = []
