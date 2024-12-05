@@ -2,11 +2,35 @@ import csv
 import os
 import time
 from operator import index
+from statistics import median
 
 import cv2
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import pandas as pd
 from collections import namedtuple
+
+
+def intersection(line1, line2):
+    # Calculates the intersection point of two lines
+    x1, y1 = line1.start
+    x2, y2 = line1.end
+    x3, y3 = line2.start
+    x4, y4 = line2.end
+
+    denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
+    if denom == 0:
+        return None  # Lines are parallel
+
+    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
+    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
+
+    if 0 <= ua <= 1 and 0 <= ub <= 1:
+        # Calculate the intersection point
+        x = x1 + ua * (x2 - x1)
+        y = y1 + ua * (y2 - y1)
+        return (round(x,3), round(y,3))
+    else:
+        return None  # No intersection within the line segments
 
 
 class LineCounter:
@@ -90,17 +114,21 @@ class LineCounter:
 
             # Determine direction based on changes
             if self.previous_side[tid][line_id] == 'negative' and self.current_side[tid][line_id] == 'positive':
-                self.direction_list[tid] = 'N to P'
+                self.direction_list[tid] = 'N to P (L-R)'
             elif self.previous_side[tid][line_id] == 'positive' and self.current_side[tid][line_id] == 'negative':
-                self.direction_list[tid] = 'P to N'
+                self.direction_list[tid] = 'P to N (R-L)'
             else:
                 self.direction_list[tid] = "_"  # No crossing detected
             self.previous_side[tid][line_id] = self.current_side[tid][line_id]
 
         # Check the latter 3 lines after a side change
         for line_id in range(2, 5):
+
             start, end = self.lines_start[line_id], self.lines_end[line_id]
             self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
+
+            cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
+
 
         # Determine lane classification based on the cross product for the latter 3 lines
         if ((self.cross_product[tid][2] < 0 and
@@ -120,36 +148,20 @@ class LineCounter:
              self.cross_product[tid][4] < 0)):
             lane = 'right'
             self.lane_list[tid] = lane
-
+        elif ((self.cross_product[tid][2] > 0 and
+              self.cross_product[tid][3] > 0 and
+              self.cross_product[tid][4] > 0) or
+              (self.cross_product[tid][2] < 0 and
+             self.cross_product[tid][3] < 0 and
+             self.cross_product[tid][4] < 0)):
+            lane = 'centre of box outside the grid'
+            self.lane_list[tid] = lane
         else:
             lane = 'unknown'
             self.lane_list[tid] = lane
 
         return self.region_counts, self.direction_list, self.lane_list
 
-
-
-    def intersection(self, line1, line2):
-        # Calculates the intersection point of two lines
-        x1, y1 = line1.start
-        x2, y2 = line1.end
-        x3, y3 = line2.start
-        x4, y4 = line2.end
-
-        denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
-        if denom == 0:
-            return None  # Lines are parallel
-
-        ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
-        ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
-
-        if 0 <= ua <= 1 and 0 <= ub <= 1:
-            # Calculate the intersection point
-            x = x1 + ua * (x2 - x1)
-            y = y1 + ua * (y2 - y1)
-            return (round(x,3), round(y,3))
-        else:
-            return None  # No intersection within the line segments
 
     def compute_line_intersections(self, lines):
         intersections = {}
@@ -161,7 +173,7 @@ class LineCounter:
 
         for b_id, b_line in boundary_lines.items():
             for c_id, c_line in count_lines.items():
-                inter_point = self.intersection(b_line, c_line)
+                inter_point = intersection(b_line, c_line)
                 if inter_point:
                     intersections[(b_id, c_id)] = inter_point
 
@@ -219,65 +231,3 @@ def process_count(region_counts, classes):
     return class_max_counts
 
 
-#
-# def perform_count_line_detections(self, class_id, tid, tlbr, frame):
-#     # Line intersection/counting section
-#     ### Calculate centroids in px, count if in regions
-#     global lane
-#     x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
-#     y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
-#
-#     # iterate over user defined count lines
-#     # Compute the cross product for the center of box vector with the first 2 lines
-#     for line_id in range(2):
-#         start, end = self.lines_start[line_id], self.lines_end[line_id]
-#         self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
-#
-#         cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
-#
-#         if self.cross_product[tid][line_id] >= 0:
-#             self.current_side[tid][line_id] = 'positive'
-#         elif self.cross_product[tid][line_id] < 0:
-#             self.current_side[tid][line_id] = 'negative'
-#
-#         # Check if the object has crossed the line
-#         if self.previous_side[tid][line_id] != 0:  # check that it isn't a new track
-#             if self.previous_side[tid][line_id] != self.current_side[tid][line_id]:
-#                 print(f"Object {class_id} has crossed the line with id {line_id}! Final side: {self.current_side[tid][line_id]}")
-#                 self.region_counts[class_id][line_id] += 1
-#
-#         # Determine direction based on changes
-#         if self.previous_side[tid][line_id] == 'negative' and self.current_side[tid][line_id] == 'positive':
-#             direction = 'N to P'
-#         elif self.previous_side[tid][line_id] == 'positive' and self.current_side[tid][line_id] == 'negative':
-#             direction = 'P to N'
-#         else:
-#             direction = "_"  # No crossing detected
-#         self.previous_side[tid][line_id] = self.current_side[tid][line_id]
-#
-#     # Check the latter 3 lines after a side change
-#     for line_id in range(2, 5):
-#         start, end = self.lines_start[line_id], self.lines_end[line_id]
-#         self.cross_product[tid][line_id] = cross_product_line((x_centre, y_centre), start, end)
-#
-#     # Determine lane classification based on the cross product for the latter 3 lines
-#     if (self.cross_product[tid][2] < 0 and
-#             self.cross_product[tid][3] < 0 and
-#             self.cross_product[tid][4] > 0):
-#         lane = 'left'
-#     elif (self.cross_product[tid][2] > 0 and
-#           self.cross_product[tid][3] > 0 and
-#           self.cross_product[tid][4] < 0):
-#         lane = 'right'
-#     else:
-#         lane = 'unknown'
-#
-#
-#
-#     self.lane_list[tid] = lane
-#     self.direction_list[tid] = direction
-#     self.previous_side[tid][line_id] = self.current_side[tid][line_id]
-#
-#
-#     return self.region_counts, self.direction_list, self.lane_list
-#
