@@ -72,8 +72,6 @@ def infer_video(args):
     args.live = False
     count_filepath,total_count_filepath = create_count_files(args)
 
-    #(630, 200), (300, 450)
-
     main_tracker = ByteTracker(args)
 
 

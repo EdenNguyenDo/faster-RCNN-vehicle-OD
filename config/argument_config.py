@@ -6,7 +6,7 @@ DEFAULT_PRETRAINED_MODEL = "fasterrcnn_resnet50_fpn"
 DEFAULT_THRESHOLD = 0.9
 DEFAULT_MAX_AGE = 30
 DEFAULT_EMBEDDER = "mobilenet"
-DEFAULT_LINES_DATA_PATH = "./2024_0323_120137_100A_line_data_2_3_2.csv"
+DEFAULT_LINES_DATA_PATH = "./lines_data/2024_0323_120137_100A_line_data_2_3_2.csv"
 
 
 def setup_argument_parser():
@@ -103,7 +103,7 @@ def setup_argument_parser():
     parser.add_argument(
         '--lines_data',
         default=DEFAULT_LINES_DATA_PATH,
-        choices=["./cam_line_data_2_3_2.csv"],
+        choices=["./lines_data/cam_line_data_2_3_2.csv"],
         help='Path to CSV file containing lines to be drawn on video'
     )
     return parser

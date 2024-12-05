@@ -1,9 +1,3 @@
-import csv
-import os
-import time
-from operator import index
-from statistics import median
-from unittest.mock import DEFAULT
 
 import cv2
 import numpy as np
@@ -15,12 +9,17 @@ from collections import namedtuple
 
 
 class LineCounter:
-    # todo save the counts by object id, line id and timestamp (frame number) into file with name based on the input video filename
-    #todo read in lines from svg file
     #todo create some way of pairing the lines into A and B hoses
-    #todo function which reads lines from svg, and outputs arrays of line_start and line_end points,
     """
+    Represents a class used to handle and analyze line data from a given CSV file
+    to perform operations such as line drawing, vehicle counting, and lane detection.
 
+    The LineCounter class processes line data stored in a specified file,
+    initializes necessary data structures, and utilizes them to work with video
+    frames for drawing lines and detecting objects crossing these lines. It
+    maintains records of vehicle directions and lane occupancy based on their
+    interactions with the lines. The class handles various configurations needed
+    for visual representation and analysis.
     """
     def __init__(self, filePath):
         # Lines will be stored as a dictionary with keys as identifiers
@@ -69,6 +68,15 @@ class LineCounter:
 
 
     def draw_lines(self, frame):
+        """
+        Draws lines on the provided frame. This method iterates through pairs of
+        start and end points (stored as class attributes) and draws lines on the
+        frame using a specified color and thickness. The lines are rendered using OpenCV.
+
+        :param frame: The frame on which the lines will be drawn. This is generally
+                      an image or a video frame represented as an array.
+        :return: None
+        """
         # Assuming there is a function or method to draw lines
         # For example, using OpenCV's cv2.line
         for start, end in zip(self.lines_start, self.lines_end):
@@ -204,6 +212,22 @@ class LineCounter:
 
 
     def compute_line_intersections(self, lines):
+        """
+        Computes the intersection points between boundary and count lines.
+
+        This function iterates over pairs of boundary and count lines, determines their
+        intersection points, and stores these points in a dictionary. The function relies
+        on the method `intersection` to calculate the intersection point of two lines.
+
+        :param lines: A dictionary where keys represent line identifiers and values
+                      contain a dictionary with 'start', 'end', and 'line_des' keys.
+                      The 'start' and 'end' keys define the coordinates of the line
+                      endpoints, and 'line_des' describes the type of the line
+                      ('boundary' or 'count').
+        :return: A dictionary with keys as tuples of boundary and count line identifiers
+                 and values as the intersection points of the respective lines.
+        """
+
         intersections = {}
 
         boundary_lines = {key: self.Line(value['start'], value['end']) for key, value in lines.items() if
@@ -222,6 +246,24 @@ class LineCounter:
 
 
 def intersection(line1, line2):
+    """
+    Calculates the intersection point of two line segments, provided as input
+    parameters. The function determines if the line segments intersect within
+    their respective endpoints, and returns the intersection point when
+    applicable. If the lines are parallel or there is no intersection within
+    the segments, the function returns None. The intersection point, if
+    found, is returned as a tuple of floats rounded to three decimal places.
+
+    :param line1: The first line segment represented by a structure containing
+                  start and end points. Each point is a tuple of floats
+                  representing (x, y) coordinates.
+    :param line2: The second line segment represented by a structure containing
+                  start and end points. Each point is a tuple of floats
+                  representing (x, y) coordinates.
+    :return: A tuple containing the x and y coordinates of the intersection
+             point, each rounded to three decimal places, or None if the lines
+             are parallel or do not intersect within the segments.
+    """
     # Calculates the intersection point of two lines
     x1, y1 = line1.start
     x2, y2 = line1.end
@@ -245,6 +287,27 @@ def intersection(line1, line2):
 
 
 def cross_product_line(point, line_start, line_end):
+    """
+    Computes the cross product of a vector from a line start point to a given
+    point with the line's direction vector. It is used to determine the
+    relative orientation of the point to the line, indicating if the point
+    lies to the left, right, or on the line in a 2D plane.
+
+    :param point: Coordinates of the point as a tuple (or list) of two
+                  numerical values, representing x and y.
+    :type point: tuple[float, float]
+    :param line_start: Coordinates of the starting point of the line as a tuple
+                       (or list) of two numerical values, representing x and y.
+    :type line_start: tuple[float, float]
+    :param line_end: Coordinates of the ending point of the line as a tuple
+                     (or list) of two numerical values, representing x and y.
+    :type line_end: tuple[float, float]
+    :return: A numerical value indicating the orientation:
+             - Positive if the point is to the left of the line,
+             - Negative if the point is to the right,
+             - Zero if the point is on the line.
+    :rtype: float
+    """
     # Calculate the direction vector of the line
     dx = line_end[0] - line_start[0]
     dy = line_end[1] - line_start[1]
@@ -263,6 +326,24 @@ def cross_product_line(point, line_start, line_end):
 
 
 def read_lines_from_csv(filePath):
+    """
+    Reads line data from a CSV file and processes it into a dictionary format.
+    The function extracts lines described by start and end coordinates from
+    each row of the CSV. The file path is assumed to encode some metadata
+    regarding counts in its filename, which are extracted and returned as well.
+    If any expected columns are missing or contain invalid data, an error
+    message is printed, and processing continues for remaining rows.
+
+    :param filePath: The path to the CSV file containing the data.
+    :type filePath: str
+    :return: A tuple containing a dictionary of lines and count metadata.
+             The dictionary has line IDs as keys, with each corresponding
+             value being a dictionary containing 'line_des', 'start' 2-tuple,
+             and 'end' 2-tuple. The tuple of metadata includes count_line_count,
+             bound_line_count, and res_line_count integers extracted from the
+             file name.
+    :rtype: Tuple[Dict[int, Dict[str, Union[str, Tuple[int, int]]]], int, int, int]
+    """
     lines = {}
     reader = pd.read_csv(filePath)
     fileName_arr = filePath.split('/')[-1].split('.')[0].split('_')
@@ -293,6 +374,25 @@ def read_lines_from_csv(filePath):
 
 
 def process_count(region_counts, classes):
+    """
+    Determines the maximum count of occurrences for each specified class
+    within given region counts.
+
+    This function maps class indices from the `classes` list to their
+    corresponding names defined in the global `VEHICLE_CLASSES` and calculate
+    the maximum count for each class by analyzing the provided `region_counts`.
+
+    :param region_counts: A dictionary where keys are class identifiers and
+                          values are lists of counts that represent the
+                          occurrence of each class in different regions.
+    :type region_counts: dict[int, list[int]]
+    :param classes: A list of class indices to be processed, where each index
+                    corresponds to a particular class in `VEHICLE_CLASSES`.
+    :type classes: list[int]
+    :return: A dictionary mapping class names to their maximum count found in
+             respective region counts.
+    :rtype: dict[str, int]
+    """
     # Creating a list to store the maximum count for each class
     # Mapping class indices to their names in VEHICLE_CLASSES and fetching max count
     class_max_counts = {VEHICLE_CLASSES[class_id]: max(region_counts[class_id]) for class_id in classes}

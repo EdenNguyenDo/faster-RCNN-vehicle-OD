@@ -1,6 +1,6 @@
 line_id,line_des,start_x,start_y,end_x,end_y
 1,left_count,323,275,322,357
-2,right_count,382,275,384,352
+2,right_count,408,272,405,353
 3,upper_boundary,278,281,631,264
 4,middle_boundary,284,315,626,294
 5,lower_boundary,291,356,637,336

@@ -43,7 +43,7 @@ def infer_video(args):
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-    args.lines_data = "./cam_line_data_2_3_2.csv"
+    args.lines_data = "./lines_data/cam_line_data_2_3_2.csv"
     count_filepath, total_count_filepath = create_count_files(args)
 
     main_tracker = ByteTracker(args)
