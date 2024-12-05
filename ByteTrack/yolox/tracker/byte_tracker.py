@@ -145,6 +145,7 @@ class STrack(BaseTrack):
 
 
 class BYTETracker(object):
+    """TODO FPS changed"""
     def __init__(self, args, frame_rate=30):
         self.tracked_stracks = []  # type: list[STrack]
         self.lost_stracks = []  # type: list[STrack]

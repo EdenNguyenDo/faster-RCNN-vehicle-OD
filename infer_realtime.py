@@ -33,7 +33,9 @@ Running inference with object tracking with faster R-CNN model
 np.random.seed(3101)
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda")
+#device = torch.device("cpu")
+
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
 
@@ -44,6 +46,7 @@ def infer_video(args):
     Then each individual frame is aggregated to create an annotated video.
     """
     args.lines_data = "./lines_data/cam_line_data_2_3_2.csv"
+    args.show = False
     count_filepath, total_count_filepath = create_count_files(args)
 
     main_tracker = ByteTracker(args)
@@ -57,7 +60,6 @@ def infer_video(args):
 
     # Set model to evaluation mode.
     model.eval().to(device)
-
     VIDEO_PATH = args.input_video
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
@@ -83,110 +85,117 @@ def infer_video(args):
 
     line_counter = LineCounter(args.lines_data)
 
+    # # Get the video's FPS (frames per second)
+    # fps = cap.get(cv2.CAP_PROP_FPS)
+    #
+    # # Set the frame interval to capture one frame every 3 seconds
+    # frame_interval = int(fps // 5)  # For 30 FPS, this equals 6 fps
     try:
         completed_successfully = True
 
         while cap.isOpened():
-            # Read a frame
-            ret, frame = cap.read()
-
-            if not ret:
-                break
-
-            # draw user defined lines on page
-            line_counter.draw_lines(frame)
-
             # if frame_count % frame_interval ==0:
 
-            if args.img_size is not None:
-                resized_frame = cv2.resize(
-                    cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
-                    (args.imgsz, args.imgsz)
-                )
-            else:
-                resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # Convert frame to tensor and send it to device (cpu or cuda).
-            frame_tensor = ToTensor()(resized_frame).to(device)
+                # Read a frame
+                ret, frame = cap.read()
 
-            # Feed frame to model and get detections - these are in xyxy format, not normalised.
-            det_start_time = time.time()
-            det_start_time = time.time()
-            with torch.no_grad():
-                detections = model([frame_tensor])[0]
-            det_end_time = time.time()
-            det_fps = 1 / (det_end_time - det_start_time)
+                if not ret:
+                    break
 
-            ################################################################################################################
-            ########################################## Byte Track Integration ##############################################
-            ################################################################################################################
+                # draw user defined lines on page
+                line_counter.draw_lines(frame)
 
-            # Transform detection output to ones to be used by bytetracker - xyxy px,
-            detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
+                # if frame_count % frame_interval ==0:
 
-            if len(detections_bytetrack) > 0:
-                # if detections_bytetrack.dim() > 1:
-                online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count,
-                                                                   count_filepath)
-                class_count_dict = process_count(region_counts, args.classes_to_track)
+                if args.img_size is not None:
+                    resized_frame = cv2.resize(
+                        cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
+                        (args.imgsz, args.imgsz)
+                    )
+                else:
+                    resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Convert frame to tensor and send it to device (cpu or cuda).
+                frame_tensor = ToTensor()(resized_frame).to(device)
 
-                # Write the total count dictionary to the JSON file, overwriting existing total counts
-                with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
-                    json.dump(class_count_dict, json_file, indent=4, ensure_ascii=False)
-            else:
-                online_im = frame
+                # Feed frame to model and get detections - these are in xyxy format, not normalised.
+                det_start_time = time.time()
+                det_start_time = time.time()
+                with torch.no_grad():
+                    detections = model([frame_tensor])[0]
+                det_end_time = time.time()
+                det_fps = 1 / (det_end_time - det_start_time)
 
-            # Extract original frame
-            # extract_frame(saved_frame_dir, frame, frame_count, video_name)
+                ################################################################################################################
+                ########################################## Byte Track Integration ##############################################
+                ################################################################################################################
 
-            # #Plot bounding boxes
-            # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
+                # Transform detection output to ones to be used by bytetracker - xyxy px,
+                detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
 
-            # Saved annotated vehicles from the image.
-            # standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
-            # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
+                if len(detections_bytetrack) > 0:
+                    # if detections_bytetrack.dim() > 1:
+                    online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count,
+                                                                       count_filepath)
+                    class_count_dict = process_count(region_counts, args.classes_to_track)
 
-            # Extract annotated frame
-            # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
+                    # Write the total count dictionary to the JSON file, overwriting existing total counts
+                    with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
+                        json.dump(class_count_dict, json_file, indent=4, ensure_ascii=False)
+                else:
+                    online_im = frame
 
-            frame_count += 1
+                # Extract original frame
+                # extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
-            print(f"Frame {frame_count}",
-                  f"Detection FPS: {det_fps:.1f}")
-            cv2.putText(
-                online_im,
-                f"FPS: {det_fps:.1f}",
-                (int(20), int(40)),
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=1,
-                color=(0, 0, 255),
-                thickness=2,
-                lineType=cv2.LINE_AA
-            )
+                # #Plot bounding boxes
+                # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
 
-            # Display each class with its count
-            y_position = 80  # Starting y-position for text display
-            for class_name, count in class_count_dict.items():
+                # Saved annotated vehicles from the image.
+                # standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
+                # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
+
+                # Extract annotated frame
+                # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
+
+                frame_count += 1
+
+                print(f"Frame {frame_count}",
+                      f"Detection FPS: {det_fps:.1f}")
                 cv2.putText(
                     online_im,
-                    f"{class_name}: {count}",
-                    (int(20), int(y_position)),
+                    f"FPS: {det_fps:.1f}",
+                    (int(20), int(40)),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.5,  # Smaller font size
-                    color=(255, 0, 0),  # Blue color: (B, G, R)
-                    thickness=1,
+                    fontScale=1,
+                    color=(0, 0, 255),
+                    thickness=2,
                     lineType=cv2.LINE_AA
                 )
-                y_position += 20  # Move down for the next class
 
-            out.write(online_im)
+                # Display each class with its count
+                y_position = 80  # Starting y-position for text display
+                for class_name, count in class_count_dict.items():
+                    cv2.putText(
+                        online_im,
+                        f"{class_name}: {count}",
+                        (int(20), int(y_position)),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.5,  # Smaller font size
+                        color=(255, 0, 0),  # Blue color: (B, G, R)
+                        thickness=1,
+                        lineType=cv2.LINE_AA
+                    )
+                    y_position += 20  # Move down for the next class
 
-            if args.show:
-                # Display or save output frame.
-                cv2.imshow("Output", online_im)
-                # Press q to quit.
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    completed_successfully = False
-                    break
+                out.write(online_im)
+
+                if args.show:
+                    # Display or save output frame.
+                    cv2.imshow("Output", online_im)
+                    # Press q to quit.
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        completed_successfully = False
+                        break
 
             # frame_count+=1
 

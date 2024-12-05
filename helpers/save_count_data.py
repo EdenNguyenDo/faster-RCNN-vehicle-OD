@@ -38,7 +38,7 @@ def create_count_files(args):
 
 
 
-def save_count_data(args, filepath, region_counts, direction, lanes, class_id, track_id, frame_number):
+def save_count_data(args, filepath, region_counts, direction, class_id, track_id, frame_number):
     """
     This function saves the counts into the file created by the function above
 
@@ -72,7 +72,6 @@ def save_count_data(args, filepath, region_counts, direction, lanes, class_id, t
             track_id,
             line_id,
             direction[track_id],
-            lanes[track_id], # Access direction and lanes through track_id
             count
         ])
 

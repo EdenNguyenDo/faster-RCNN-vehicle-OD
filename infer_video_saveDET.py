@@ -135,7 +135,7 @@ def infer_video(args):
             # draw user defined lines on page
             line_counter.draw_lines(frame)
 
-            # if frame_count % frame_interval ==0:
+            #if frame_count % frame_interval ==0:
 
             if args.img_size is not None:
                 resized_frame = cv2.resize(

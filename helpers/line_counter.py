@@ -170,45 +170,10 @@ class LineCounter:
         """
         This loop performs lane detection and numbering using cross product
         """
-        current_sign = 'DEFAULT_sign'
-        for cp in bound_list_CP:
-            index_cp = bound_list_CP.index(cp)
-            next_sign = int(np.sign(cp))
-            # If there is a sign differences (-,+,+) or (-,-,+) and it is not the first number
-            if next_sign != current_sign and current_sign != 'DEFAULT_sign' :
-                # changed_idx will defo start at 1
-                # changed_idx determines lanes number
-                changed_idx = index_cp
-                self.lane_list[tid] = changed_idx
-
-                # If there is a sign difference, break and assure that the lanes is determined
-                break
-            elif next_sign == 0:
-                self.lane_list[tid] = f"this vehicle is in the middle of two lanes: {index_cp} and {index_cp-1}"
-            else:
-                current_sign = next_sign
-                all_sign = next_sign
-        else:
-            # We know that the centre of box is outside the boundaries
-            # Use reserve lines for checking
-            # If all positive, use line 1 (further). Otherwise line 2 (closer)
-            if int(all_sign) == 1:
-                start, end = self.lines_start[-2], self.lines_end[-2]
-                additional_CP = cross_product_line((x_centre, y_centre), start, end)
-                if additional_CP > 0:
-                    self.lane_list[tid] = f"this vehicle is outside the lanes on the FURTHER side"
-                else:
-                    self.lane_list[tid] = 1
-            elif int(all_sign) == -1:
-                start, end = self.lines_start[-1], self.lines_end[-1]
-                additional_CP = cross_product_line((x_centre, y_centre), start, end)
-                if additional_CP < 0:
-                    self.lane_list[tid] = f"this vehicle is outside the lanes on the CLOSER side"
-                else:
-                    self.lane_list[tid] = self.bound_lines - 1
+        self.lane_list = self.detect_lane(bound_list_CP, tid, x_centre, y_centre)
 
 
-        return self.region_counts, self.direction_list, self.lane_list
+        return self.region_counts, self.direction_list  #, self.lane_list
 
 
     def compute_line_intersections(self, lines):
@@ -243,6 +208,50 @@ class LineCounter:
 
         return intersections
 
+
+
+    def detect_lane(self, bound_list_CP, tid, x_centre, y_centre):
+        """
+        This loop performs lane detection and numbering using cross product
+        """
+        current_sign = 'DEFAULT_sign'
+        for cp in bound_list_CP:
+            index_cp = bound_list_CP.index(cp)
+            next_sign = int(np.sign(cp))
+            # If there is a sign differences (-,+,+) or (-,-,+) and it is not the first number
+            if next_sign != current_sign and current_sign != 'DEFAULT_sign':
+                # changed_idx will defo start at 1
+                # changed_idx determines lanes number
+                changed_idx = index_cp
+                self.lane_list[tid] = changed_idx
+
+                # If there is a sign difference, break and assure that the lanes is determined
+                break
+            elif next_sign == 0:
+                self.lane_list[tid] = f"this vehicle is in the middle of two lanes: {index_cp} and {index_cp - 1}"
+            else:
+                current_sign = next_sign
+                all_sign = next_sign
+        else:
+            # We know that the centre of box is outside the boundaries
+            # Use reserve lines for checking
+            # If all positive, use line 1 (further). Otherwise line 2 (closer)
+            if int(all_sign) == 1:
+                start, end = self.lines_start[-2], self.lines_end[-2]
+                additional_CP = cross_product_line((x_centre, y_centre), start, end)
+                if additional_CP > 0:
+                    self.lane_list[tid] = f"this vehicle is outside the lanes on the FURTHER side"
+                else:
+                    self.lane_list[tid] = 1
+            elif int(all_sign) == -1:
+                start, end = self.lines_start[-1], self.lines_end[-1]
+                additional_CP = cross_product_line((x_centre, y_centre), start, end)
+                if additional_CP < 0:
+                    self.lane_list[tid] = f"this vehicle is outside the lanes on the CLOSER side"
+                else:
+                    self.lane_list[tid] = self.bound_lines - 1
+
+        return self.lane_list
 
 
 def intersection(line1, line2):
