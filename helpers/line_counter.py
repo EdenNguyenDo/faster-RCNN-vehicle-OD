@@ -1,6 +1,7 @@
 
 import cv2
 import numpy as np
+from sympy import false
 
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import pandas as pd
@@ -119,6 +120,7 @@ class LineCounter:
         # Line intersection/counting section
         ### Calculate centroids in px, count if in regions
         global lane
+        hit = False
         x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
         y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
 
@@ -143,16 +145,46 @@ class LineCounter:
                 if self.previous_side[tid][count_line_id] != self.current_side[tid][count_line_id]:
                     print(f"Object {class_id} has crossed the line with id {count_line_id}! Final side: {self.current_side[tid][count_line_id]}")
                     self.region_counts[class_id][count_line_id] += 1
+                    hit = True
 
             # Determine direction based on changes
             if self.previous_side[tid][count_line_id] == 'negative' and self.current_side[tid][count_line_id] == 'positive':
-                self.direction_list[tid] = 'N to P (L-R)'
+                object_direction = 'N to P (L-R)'
+                self.direction_list[tid] = object_direction
             elif self.previous_side[tid][count_line_id] == 'positive' and self.current_side[tid][count_line_id] == 'negative':
-                self.direction_list[tid] = 'P to N (R-L)'
-            else:
-                self.direction_list[tid] = "_"  # No crossing detected
+                object_direction = 'P to N (R-L)'
+                self.direction_list[tid] = object_direction
+
             self.previous_side[tid][count_line_id] = self.current_side[tid][count_line_id]
 
+
+        # self.lane_list = self.detect_lane(frame, tid, x_centre, y_centre)
+
+
+        return self.region_counts, self.direction_list, hit  #, self.lane_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def detect_lane(self, frame, tid, x_centre, y_centre):
 
 
         """
@@ -167,50 +199,6 @@ class LineCounter:
             bound_list_CP.append(self.cross_product[tid][bound_line_id])
 
 
-        """
-        This loop performs lane detection and numbering using cross product
-        """
-        self.lane_list = self.detect_lane(bound_list_CP, tid, x_centre, y_centre)
-
-
-        return self.region_counts, self.direction_list  #, self.lane_list
-
-
-    def compute_line_intersections(self, lines):
-        """
-        Computes the intersection points between boundary and count lines.
-
-        This function iterates over pairs of boundary and count lines, determines their
-        intersection points, and stores these points in a dictionary. The function relies
-        on the method `intersection` to calculate the intersection point of two lines.
-
-        :param lines: A dictionary where keys represent line identifiers and values
-                      contain a dictionary with 'start', 'end', and 'line_des' keys.
-                      The 'start' and 'end' keys define the coordinates of the line
-                      endpoints, and 'line_des' describes the type of the line
-                      ('boundary' or 'count').
-        :return: A dictionary with keys as tuples of boundary and count line identifiers
-                 and values as the intersection points of the respective lines.
-        """
-
-        intersections = {}
-
-        boundary_lines = {key: self.Line(value['start'], value['end']) for key, value in lines.items() if
-                          'boundary' in value['line_des']}
-        count_lines = {key: self.Line(value['start'], value['end']) for key, value in lines.items() if
-                       'count' in value['line_des']}
-
-        for b_id, b_line in boundary_lines.items():
-            for c_id, c_line in count_lines.items():
-                inter_point = intersection(b_line, c_line)
-                if inter_point:
-                    intersections[(b_id, c_id)] = inter_point
-
-        return intersections
-
-
-
-    def detect_lane(self, bound_list_CP, tid, x_centre, y_centre):
         """
         This loop performs lane detection and numbering using cross product
         """
@@ -252,6 +240,39 @@ class LineCounter:
                     self.lane_list[tid] = self.bound_lines - 1
 
         return self.lane_list
+
+
+    def compute_line_intersections(self, lines):
+        """
+        Computes the intersection points between boundary and count lines.
+
+        This function iterates over pairs of boundary and count lines, determines their
+        intersection points, and stores these points in a dictionary. The function relies
+        on the method `intersection` to calculate the intersection point of two lines.
+
+        :param lines: A dictionary where keys represent line identifiers and values
+                      contain a dictionary with 'start', 'end', and 'line_des' keys.
+                      The 'start' and 'end' keys define the coordinates of the line
+                      endpoints, and 'line_des' describes the type of the line
+                      ('boundary' or 'count').
+        :return: A dictionary with keys as tuples of boundary and count line identifiers
+                 and values as the intersection points of the respective lines.
+        """
+
+        intersections = {}
+
+        boundary_lines = {key: self.Line(value['start'], value['end']) for key, value in lines.items() if
+                          'boundary' in value['line_des']}
+        count_lines = {key: self.Line(value['start'], value['end']) for key, value in lines.items() if
+                       'count' in value['line_des']}
+
+        for b_id, b_line in boundary_lines.items():
+            for c_id, c_line in count_lines.items():
+                inter_point = intersection(b_line, c_line)
+                if inter_point:
+                    intersections[(b_id, c_id)] = inter_point
+
+        return intersections
 
 
 def intersection(line1, line2):
