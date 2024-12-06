@@ -30,7 +30,7 @@ Running inference with object tracking with faster R-CNN model
 np.random.seed(3101)
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu')
 
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
@@ -42,7 +42,7 @@ def infer(args):
     Then each individual frame is aggregated to create an annotated video.
     """
     args.lines_data = "lines_data/cam_line_data_3_3_2.csv"
-    args.show = True
+    args.show = False
     count_filepath, total_count_filepath = create_count_files(args)
 
     main_tracker = ByteTracker(args)
