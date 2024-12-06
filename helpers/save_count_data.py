@@ -66,12 +66,12 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
     # Collect data to write
     data_to_write = []
     counts_by_lines = region_counts[class_id]  # Directly access the item using class_id
-    accumulate_count = max(counts_by_lines)
+    accumulate_count = sum(counts_by_lines)
     data_to_write.append([
         timestamp,  # Use generated timestamp
         class_id,
         track_id,
-        direction[track_id],
+        direction,
         accumulate_count
     ])
 

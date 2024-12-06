@@ -69,6 +69,8 @@ def infer_video(args):
     global completed_successfully
     args.live = False
     args.show = True
+    # args.input_video = 'output_frcnn-ds/_fasterrcnn_resnet50_fpn_mobilenet.mp4'
+    # args.lines_data = 'lines_data/cam_line_data_3_3_2.csv'
     count_filepath,total_count_filepath = create_count_files(args)
 
     main_tracker = ByteTracker(args)

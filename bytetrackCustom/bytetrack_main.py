@@ -107,11 +107,11 @@ class ByteTracker:
                         online_tlwhs.append(tlwh)
 
                         # use the trackings' output bbox locations to detect objects, with counts and direction detection
-                        self.region_counts, self.direction_list, hit, newly_tracked = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, frame)
+                        self.region_counts, direction, tracked, hit = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, frame)
 
-                        if hit and newly_tracked:
+                        if tracked and hit:
                             # save the count into the file
-                            save_count_data(self.args, count_filepath, self.region_counts, self.direction_list, class_id, tid, frame_count)
+                            save_count_data(self.args, count_filepath, self.region_counts, direction, class_id, tid, frame_count)
 
 
                         # Get the xml output for saving into annotation file
