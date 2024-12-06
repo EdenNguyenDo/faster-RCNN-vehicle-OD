@@ -7,6 +7,9 @@ import torchvision
 import cv2
 import os
 import time
+
+from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
+
 from bytetrackCustom.bytetrack_main import ByteTracker
 from config.argument_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
@@ -27,19 +30,18 @@ Running inference with object tracking with faster R-CNN model
 np.random.seed(3101)
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device("cuda")
-#device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
 
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
 
 
-def infer_video(args):
+def infer(args):
     """
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
     """
-    args.lines_data = "./lines_data/cam_line_data_3_3_2.csv"
+    args.lines_data = "lines_data/cam_line_data_3_3_2.csv"
     args.show = True
     count_filepath, total_count_filepath = create_count_files(args)
 
@@ -50,7 +52,7 @@ def infer_video(args):
     print(f"Re-ID embedder: {args.embedder}")
 
     # Load model.
-    model = getattr(torchvision.models.detection, args.pretrained_model)(weights='DEFAULT')
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
 
     # Set model to evaluation mode.
     model.eval().to(device)
@@ -60,8 +62,7 @@ def infer_video(args):
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
     video_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
-    saved_frame_dir = 'inference_dataset/images/'
-    saved_annotated_frame_dir = 'inference_dataset/annotated_images'
+
 
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
@@ -79,11 +80,6 @@ def infer_video(args):
 
     line_counter = LineCounter(args.lines_data)
 
-    # # Get the video's FPS (frames per second)
-    # fps = cap.get(cv2.CAP_PROP_FPS)
-    #
-    # # Set the frame interval to capture one frame every 3 seconds
-    # frame_interval = int(fps // 5)  # For 30 FPS, this equals 6 fps
     try:
         completed_successfully = True
 
@@ -113,7 +109,6 @@ def infer_video(args):
 
                 # Feed frame to model and get detections - these are in xyxy format, not normalised.
                 det_start_time = time.time()
-                det_start_time = time.time()
                 with torch.no_grad():
                     detections = model([frame_tensor])[0]
                 det_end_time = time.time()
@@ -132,24 +127,8 @@ def infer_video(args):
                                                                        count_filepath)
                     class_count_dict = process_count(region_counts, args.classes_to_track)
 
-                    # Write the total count dictionary to the JSON file, overwriting existing total counts
-                    # with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
-                    #     json.dump(class_count_dict, json_file, indent=4, ensure_ascii=False)
                 else:
                     online_im = frame
-
-                # Extract original frame
-                # extract_frame(saved_frame_dir, frame, frame_count, video_name)
-
-                # #Plot bounding boxes
-                # annotated_frame = draw_boxes(detections, frame, args.cls, 0.9)
-
-                # Saved annotated vehicles from the image.
-                # standardize_to_txt(detections, args.classes_to_track, args.score_threshold, frame_count, video_name, frame_width, frame_height)
-                # standardize_to_xml(detections, args.cls, frame_count, video_name, frame_width, frame_height)
-
-                # Extract annotated frame
-                # extract_frame(saved_frame_dir, annotated_frame, frame_count, video_name)
 
                 frame_count += 1
 
@@ -216,4 +195,4 @@ if __name__ == '__main__':
     args = setup_argument_parser().parse_args()
     history = deque()
 
-    infer_video(args)
+    infer(args)

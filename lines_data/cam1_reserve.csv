@@ -1,0 +1,9 @@
+line_id,line_des,start_x,start_y,end_x,end_y
+1,left_count,289,277,284,348
+2,middle_count,362,277,362,352
+3,right_count,433,285,428,357
+4,upper_boundary,278,281,631,264
+5,middle_boundary,284,315,626,294
+6,lower_boundary,291,356,637,336
+1001,upper_reserve,277,266,632,248
+1002,lower_reserve,291,375,634,353
