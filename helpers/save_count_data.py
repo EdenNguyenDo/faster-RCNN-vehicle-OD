@@ -1,7 +1,7 @@
 import csv
 import os
 import time
-from itertools import accumulate
+from datetime import datetime
 
 """
 This script saves count data in a format that is needed for analysis
@@ -57,10 +57,12 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
         video_name = args.input_video.split('/')[-1].split('.')[0]
         timestamp = f"{video_name}_{round(frame_number/30,3)})"
     else:
-        current_time = time.localtime()
-        formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
-        milliseconds = int(time.time() * 1000) % 1000
-        timestamp = f"{formatted_time}_{milliseconds:03d}"
+        current_time = datetime.now()
+        # formatted_time = time.strftime("%Y-%m-%d_%H%M%S", current_time)
+        # milliseconds = int(time.time() * 1000) % 1000
+        # timestamp = f"{formatted_time}_{milliseconds:03d}"
+        date = current_time.strftime("%Y-%m-%d")
+        time_mili = current_time.strftime("%H:%M:%S.%f")[:-3]  # Stripping
 
 
     # Collect data to write
@@ -68,7 +70,8 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
     counts_by_lines = region_counts[class_id]  # Directly access the item using class_id
     accumulate_count = sum(counts_by_lines)
     data_to_write.append([
-        timestamp,  # Use generated timestamp
+        date,  # Use generated timestamp
+        time_mili,
         class_id,
         track_id,
         direction,
@@ -81,6 +84,6 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
         writer = csv.writer(file)
         # Write header only if the file does not exist or is empty
         if file.tell() == 0:
-            writer.writerow(["timestamp", "class_id", "track_id", "direction", "count"])
+            writer.writerow(["date", "time", "class_id", "track_id", "direction", "count"])
         writer.writerows(data_to_write)  # Write data rows
 

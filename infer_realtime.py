@@ -77,11 +77,11 @@ def infer_video(args):
     )
 
     frame_count = 0  # To count total frames.
-    class_count_dict = {"human": 0,
+    class_count_dict = {"pedestrian": 0,
                         "vehicle type 1 - bicycle": 0,
                         "vehicle type 1 - car": 0,
-                        "vehicle type 3": 0,
-                        "vehicle type 5": 0}
+                        "vehicle type 3 - bus": 0,
+                        "vehicle type 5 - truck": 0}
 
     line_counter = LineCounter(args.lines_data)
 

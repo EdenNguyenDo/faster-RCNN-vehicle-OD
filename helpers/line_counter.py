@@ -161,11 +161,11 @@ class LineCounter:
                         # Determine direction based on changes
                         if self.previous_side[tid][count_line_id] == 'negative' and self.current_side[tid][
                             count_line_id] == 'positive':
-                            object_direction = 'N to P (L-R)'
+                            object_direction = 'N-L'
                             self.direction_list[tid] = object_direction
                         elif self.previous_side[tid][count_line_id] == 'positive' and self.current_side[tid][
                             count_line_id] == 'negative':
-                            object_direction = 'P to N (R-L)'
+                            object_direction = 'P-R'
                             self.direction_list[tid] = object_direction
 
                         tracked = self.tracked_object[tid] = True
