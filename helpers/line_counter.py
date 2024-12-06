@@ -121,6 +121,8 @@ class LineCounter:
         ### Calculate centroids in px, count if in regions
         global lane
         hit = False
+        newly_tracked = False
+        prev_id = None
         x_centre = (tlbr[2] - tlbr[0]) / 2 + tlbr[0]
         y_centre = (tlbr[3] - tlbr[1]) / 2 + tlbr[1]
 
@@ -134,34 +136,42 @@ class LineCounter:
             start, end = self.lines_start[count_line_id], self.lines_end[count_line_id]
             self.cross_product[tid][count_line_id] = cross_product_line((x_centre, y_centre), start, end)
 
+            current_cp = self.cross_product[tid][count_line_id]
             # cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
-            if self.cross_product[tid][count_line_id] >= 0:
+            if current_cp >= 0:
                 self.current_side[tid][count_line_id] = 'positive'
-            elif self.cross_product[tid][count_line_id] < 0:
+            elif current_cp < 0:
                 self.current_side[tid][count_line_id] = 'negative'
 
-            # Check if the object has crossed the line
+
+            # Check if the object has crossed the line, track has to be new
             if self.previous_side[tid][count_line_id] != 0:  # check that it isn't a new track
+                # It is not a new track
                 if self.previous_side[tid][count_line_id] != self.current_side[tid][count_line_id]:
                     print(f"Object {class_id} has crossed the line with id {count_line_id}! Final side: {self.current_side[tid][count_line_id]}")
                     self.region_counts[class_id][count_line_id] += 1
                     hit = True
+                    if tid != prev_id:
+                        newly_tracked = True
 
-            # Determine direction based on changes
-            if self.previous_side[tid][count_line_id] == 'negative' and self.current_side[tid][count_line_id] == 'positive':
-                object_direction = 'N to P (L-R)'
-                self.direction_list[tid] = object_direction
-            elif self.previous_side[tid][count_line_id] == 'positive' and self.current_side[tid][count_line_id] == 'negative':
-                object_direction = 'P to N (R-L)'
-                self.direction_list[tid] = object_direction
+            if hit:
+                # Determine direction based on changes
+                if self.previous_side[tid][count_line_id] == 'negative' and self.current_side[tid][count_line_id] == 'positive':
+                    object_direction = 'N to P (L-R)'
+                    self.direction_list[tid] = object_direction
+                elif self.previous_side[tid][count_line_id] == 'positive' and self.current_side[tid][count_line_id] == 'negative':
+                    object_direction = 'P to N (R-L)'
+                    self.direction_list[tid] = object_direction
 
             self.previous_side[tid][count_line_id] = self.current_side[tid][count_line_id]
+            # Set the id to the current id
+            prev_id = tid
 
 
         # self.lane_list = self.detect_lane(frame, tid, x_centre, y_centre)
 
 
-        return self.region_counts, self.direction_list, hit  #, self.lane_list
+        return self.region_counts, self.direction_list, hit, newly_tracked  #, self.lane_list
 
 
 
