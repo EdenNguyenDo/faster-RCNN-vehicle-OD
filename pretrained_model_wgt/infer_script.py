@@ -30,7 +30,7 @@ Running inference with object tracking with faster R-CNN model
 np.random.seed(3101)
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device('cpu')
+device = torch.device('cuda')
 
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
