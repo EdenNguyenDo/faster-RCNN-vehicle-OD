@@ -155,7 +155,7 @@ class LineCounter:
                     if not self.tracked_object[tid]:
 
                         # If the ID never appeared before
-                        print(f"Object {class_id} has crossed the line with id {count_line_id}! Final side: {self.current_side[tid][count_line_id]}")
+                        print(f"Object {tid} of class {class_id} has crossed the line with id {count_line_id}! Final side: {self.current_side[tid][count_line_id]}")
                         self.region_counts[class_id][count_line_id] += 1
 
                         # Determine direction based on changes

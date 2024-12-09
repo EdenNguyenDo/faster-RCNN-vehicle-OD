@@ -10,6 +10,12 @@ def setup_argument_parser(config_path):
     parser = argparse.ArgumentParser(description='Arguments for inference using fine-tuned model')
 
     parser.add_argument(
+        '--debug_mode',
+        default=config.get('debug'),
+        help='Indicator of debug mode activation'
+    )
+
+    parser.add_argument(
         '--camera_index',
         default=config.get('camera_index'),
         help='Index of the camera to be accessed by the model for real-time inference'

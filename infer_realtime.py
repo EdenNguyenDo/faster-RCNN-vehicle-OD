@@ -154,8 +154,9 @@ def infer_video(args):
 
                 frame_count += 1
 
-                print(f"Frame {frame_count}",
-                      f"Detection FPS: {det_fps:.1f}")
+                if args.debug_mode is True:
+                    print(f"Frame {frame_count}",
+                          f"Detection FPS: {det_fps:.1f}")
 
                 cv2.putText(
                     online_im,

@@ -220,8 +220,10 @@ def infer_video(args):
                 y_position += 20  # Move down for the next class
 
             frame_count += 1
-            print(f"Frame {frame_count}/{frames}",
-                  f"Detection FPS: {det_fps:.1f}")
+
+            if args.debug_mode is True:
+                print(f"Frame {frame_count}/{frames}",
+                      f"Detection FPS: {det_fps:.1f}")
 
             out.write(online_im)
 
