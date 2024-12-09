@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/faster-R-CNN-model.iml" filepath="$PROJECT_DIR$/.idea/faster-R-CNN-model.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/tupi-ai-realtime.iml" filepath="$PROJECT_DIR$/.idea/tupi-ai-realtime.iml" />
     </modules>
   </component>
 </project>

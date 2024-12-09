@@ -1,8 +1,5 @@
-
 import cv2
 import numpy as np
-from sympy import false
-
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import pandas as pd
 from collections import namedtuple
@@ -10,7 +7,6 @@ from collections import namedtuple
 
 
 class LineCounter:
-    #todo create some way of pairing the lines into A and B hoses
     """
     Represents a class used to handle and analyze line data from a given CSV file
     to perform operations such as line drawing, vehicle counting, and lane detection.
