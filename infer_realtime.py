@@ -7,8 +7,9 @@ import torchvision
 import cv2
 import os
 import time
+
 from bytetrackCustom.bytetrack_main import ByteTracker
-from config.argument_config import setup_argument_parser
+from helpers.setup_infer_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
 from helpers.save_count_data import create_count_files
 from torchvision.transforms import ToTensor
@@ -27,7 +28,7 @@ Running inference with object tracking with faster R-CNN model
 np.random.seed(3101)
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device("cuda")
+device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
 #device = torch.device("cpu")
 
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
@@ -55,7 +56,7 @@ def infer_video(args):
     # Set model to evaluation mode.
     model.eval().to(device)
     VIDEO_PATH = args.input_video
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(args.camera_index)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
@@ -155,6 +156,7 @@ def infer_video(args):
 
                 print(f"Frame {frame_count}",
                       f"Detection FPS: {det_fps:.1f}")
+
                 cv2.putText(
                     online_im,
                     f"FPS: {det_fps:.1f}",
@@ -213,7 +215,7 @@ def infer_video(args):
 
 
 if __name__ == '__main__':
-    args = setup_argument_parser().parse_args()
+    args = setup_argument_parser('config/infer_config.yaml').parse_args()
     history = deque()
 
     infer_video(args)

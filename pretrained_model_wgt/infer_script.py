@@ -11,7 +11,7 @@ import time
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 
 from bytetrackCustom.bytetrack_main import ByteTracker
-from config.argument_config import setup_argument_parser
+from helpers.setup_infer_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
 from helpers.save_count_data import create_count_files
 from torchvision.transforms import ToTensor
@@ -30,7 +30,7 @@ Running inference with object tracking with faster R-CNN model
 np.random.seed(3101)
 OUT_DIR = 'output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
-device = torch.device('cuda')
+device = torch.device('cpu')
 
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
@@ -192,7 +192,7 @@ def infer(args):
 
 
 if __name__ == '__main__':
-    args = setup_argument_parser().parse_args()
+    args = setup_argument_parser('../config/infer_config.yaml').parse_args()
     history = deque()
 
     infer(args)
