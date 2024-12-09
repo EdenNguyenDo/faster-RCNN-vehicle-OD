@@ -53,7 +53,7 @@ def infer_video(args):
     # Set model to evaluation mode.
     model.eval().to(device)
     VIDEO_PATH = args.input_video
-    cap = cv2.VideoCapture(VIDEO_PATH)
+    cap = cv2.VideoCapture(args.camera_index)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
