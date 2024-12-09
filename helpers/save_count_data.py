@@ -53,16 +53,16 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
     :return:
     """
     live = args.live
+    date = datetime.now().strftime("%Y-%m-%d")
+
     if not live:
         video_name = args.input_video.split('/')[-1].split('.')[0]
-        timestamp = f"{video_name}_{round(frame_number/30,3)})"
+        time_mili = f"{video_name}_{round(frame_number/30,3)})"
     else:
-        current_time = datetime.now()
         # formatted_time = time.strftime("%Y-%m-%d_%H%M%S", current_time)
         # milliseconds = int(time.time() * 1000) % 1000
         # timestamp = f"{formatted_time}_{milliseconds:03d}"
-        date = current_time.strftime("%Y-%m-%d")
-        time_mili = current_time.strftime("%H:%M:%S.%f")[:-3]  # Stripping
+        time_mili = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Stripping
 
 
     # Collect data to write
