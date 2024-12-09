@@ -13,9 +13,12 @@ def get_base_directory():
     Get the base directory where the application is running.
     """
     if getattr(sys, 'frozen', False):  # Check if running as a bundled executable
-        base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        # Always set the base directory to the persistent storage location
+        home_dir = os.path.expanduser("~")
+        base_dir = os.path.join(home_dir, "output", "tupi-ai-realtime")
     else:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Use script's original directory
+
     return base_dir
 
 def create_count_files(args):

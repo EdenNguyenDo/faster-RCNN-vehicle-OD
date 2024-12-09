@@ -1,6 +1,5 @@
 import csv
 from collections import deque
-import json
 import numpy as np
 import torch
 import torchvision
@@ -9,7 +8,6 @@ import os
 import time
 
 from bytetrackCustom.bytetrack_main import ByteTracker
-from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from helpers.setup_infer_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
 from helpers.save_count_data import create_count_files
