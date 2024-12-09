@@ -69,7 +69,6 @@ def infer_video(args):
     global completed_successfully
     args.live = False
     args.show = True
-    # args.input_video = 'output_frcnn-ds/_fasterrcnn_resnet50_fpn_mobilenet.mp4'
     # args.lines_data = 'lines_data/cam_line_data_3_3_2.csv'
     count_filepath,total_count_filepath = create_count_files(args)
 
@@ -141,7 +140,7 @@ def infer_video(args):
             if args.img_size is not None:
                 resized_frame = cv2.resize(
                     cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
-                    (args.imgsz, args.imgsz)
+                    (args.img_size, args.img_size)
                 )
             else:
                 resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -256,7 +255,7 @@ def infer_video(args):
 
 if __name__ == '__main__':
 
-    args = setup_argument_parser().parse_args()
+    args = setup_argument_parser('config/infer_config.yaml').parse_args()
     history = deque()
 
     infer_video(args)
