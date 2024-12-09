@@ -1,5 +1,4 @@
 import csv
-import json
 from collections import deque
 import numpy as np
 import torch
@@ -14,7 +13,7 @@ from helpers.line_counter import LineCounter, process_count
 from helpers.save_count_data import create_count_files
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
+from bytetrackCustom.bytetrack_utils import transform_detection_output
 
 """
 Running inference with object tracking with faster R-CNN model
@@ -54,7 +53,7 @@ def infer_video(args):
     # Set model to evaluation mode.
     model.eval().to(device)
     VIDEO_PATH = args.input_video
-    cap = cv2.VideoCapture(args.camera_index)
+    cap = cv2.VideoCapture(VIDEO_PATH)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_fps = int(cap.get(5))
@@ -103,7 +102,7 @@ def infer_video(args):
                 if args.img_size is not None:
                     resized_frame = cv2.resize(
                         cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
-                        (args.imgsz, args.imgsz)
+                        (args.img_size, args.img_size)
                     )
                 else:
                     resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
