@@ -193,18 +193,6 @@ class LineCounter:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     def detect_lane(self, frame, tid, x_centre, y_centre):
 
 
