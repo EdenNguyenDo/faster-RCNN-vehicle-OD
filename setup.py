@@ -26,7 +26,7 @@ setup(
     ],
     entry_points={                   # Define entry points (e.g., CLI commands)
         'console_scripts': [
-            'your_command=your_module:main_function',
+            'infer_live=infer_realtime:main_function',
         ],
     },
 )
