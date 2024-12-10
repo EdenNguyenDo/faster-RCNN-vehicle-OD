@@ -124,8 +124,8 @@ def infer_realtime(args):
                 with torch.no_grad():
                     detections = model([frame_tensor])[0]
                 det_end_time = time.time()
-                det_fps = 1 / (det_end_time - det_start_time)
-
+                det_time = (det_end_time - det_start_time)
+                print(det_time)
                 ################################################################################################################
                 ########################################## Byte Track Integration ##############################################
                 ################################################################################################################
@@ -133,6 +133,8 @@ def infer_realtime(args):
                 # Transform detection output to ones to be used by bytetracker - xyxy px,
                 detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
 
+
+                track_start_time = time.time()
                 if len(detections_bytetrack) > 0:
                     # if detections_bytetrack.dim() > 1:
                     online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count,
@@ -144,7 +146,9 @@ def infer_realtime(args):
                     #     json.dump(class_count_dict, json_file, indent=4, ensure_ascii=False)
                 else:
                     online_im = frame
-
+                track_end_time = time.time()
+                track_time = (track_end_time - track_start_time)
+                print(track_time)
                 # Extract original frame
                 # extract_frame(saved_frame_dir, frame, frame_count, video_name)
 
@@ -162,11 +166,11 @@ def infer_realtime(args):
 
                 if args.debug_mode is True:
                     print(f"Frame {frame_count}",
-                          f"Detection FPS: {det_fps:.1f}")
+                          f"Detection FPS: {det_time:.2f}")
 
                 cv2.putText(
                     online_im,
-                    f"FPS: {det_fps:.1f}",
+                    f"Det: {det_time:.5f} --- Track: {track_time:.5f}",
                     (int(20), int(40)),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=1,
