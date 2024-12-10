@@ -2,8 +2,8 @@
 
 ### Description 
 
-The functionality of the system is to process video and real time video stream
-for count extracting.
+The functionality of the system is to process video and real time video stream for counting vehicles and pedestrian with the help
+of multiple deep learning models and libraries such as opencv or numpy.
 
 ### Methodology
 
