@@ -67,7 +67,8 @@ def infer_video(args):
     global completed_successfully
     args.live = False
     args.show = True
-    # args.lines_data = 'lines_data/cam_line_data_3_3_2.csv'
+    args.debug = True
+    args.lines_data = 'lines_data/2024_0323_120137_100A_line_data_2_3_2.csv'
     count_filepath,total_count_filepath = create_count_files(args)
 
     main_tracker = ByteTracker(args)
