@@ -2,8 +2,8 @@ from collections import deque
 
 import numpy as np
 from ByteTrack.yolox.tracker.byte_tracker import BYTETracker
-from bytetrackCustom.bytetrack_args import ByteTrackArgument
-from bytetrackCustom.bytetrack_utils import plot_tracking
+from ByteTrack.bytetrackCustom.bytetrack_args import ByteTrackArgument
+from ByteTrack.bytetrackCustom.bytetrack_utils import plot_tracking
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from helpers.line_counter import LineCounter
 from helpers.save_count_data import save_count_data

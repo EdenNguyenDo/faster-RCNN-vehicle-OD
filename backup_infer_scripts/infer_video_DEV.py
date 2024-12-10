@@ -7,15 +7,14 @@ import cv2
 import os
 import time
 
-from bytetrackCustom.bytetrack_main import ByteTracker
+from ByteTrack.bytetrackCustom.bytetrack_main import ByteTracker
 from helpers.setup_infer_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
 from helpers.save_count_data import create_count_files
-from helpers.standardize_detections import standardize_to_txt
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
-from bytetrackCustom.bytetrack_utils import transform_detection_output, plot_tracking, count_tracks
+from ByteTrack.bytetrackCustom.bytetrack_utils import transform_detection_output
 
 """
 Running inference with object tracking with faster R-CNN model
