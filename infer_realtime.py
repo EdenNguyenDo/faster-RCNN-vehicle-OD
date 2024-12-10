@@ -32,7 +32,7 @@ COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
 
 
-def infer_video(args):
+def infer_realtime(args):
     """
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
@@ -214,4 +214,4 @@ if __name__ == '__main__':
     args = setup_argument_parser('config/infer_config.yaml').parse_args()
     history = deque()
 
-    infer_video(args)
+    infer_realtime(args)
