@@ -15,7 +15,7 @@ def get_base_directory():
     if getattr(sys, 'frozen', False):  # Check if running as a bundled executable
         # Always set the base directory to the persistent storage location
         home_dir = os.path.expanduser("~")
-        base_dir = os.path.join(home_dir, "output", "tupi-ai-realtime")
+        base_dir = os.path.join(home_dir, "COUNT_FILES", "tupi-ai-realtime")
     else:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Use script's original directory
 
