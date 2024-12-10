@@ -28,7 +28,7 @@ Running inference with object tracking with faster R-CNN model
 
 np.random.seed(3101)
 
-OUT_DIR = 'output_frcnn-ds'
+OUT_DIR = '../output_frcnn-ds'
 os.makedirs(OUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
@@ -92,8 +92,8 @@ def infer_video(args):
     frame_fps = int(cap.get(5))
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0].split("/")[-1]
-    saved_frame_dir = 'inference_dataset/images/'
-    saved_annotated_frame_dir = 'inference_dataset/annotated_images'
+    saved_frame_dir = '../inference_dataset/images/'
+    saved_annotated_frame_dir = '../inference_dataset/annotated_images'
 
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
@@ -256,7 +256,7 @@ def infer_video(args):
 
 if __name__ == '__main__':
 
-    args = setup_argument_parser('config/infer_config.yaml').parse_args()
+    args = setup_argument_parser('../config/infer_config.yaml').parse_args()
     history = deque()
 
     infer_video(args)
