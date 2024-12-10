@@ -212,6 +212,4 @@ def infer_realtime(args):
 
 if __name__ == '__main__':
     args = setup_argument_parser('config/infer_config.yaml').parse_args()
-    history = deque()
-
     infer_realtime(args)
