@@ -5,11 +5,11 @@ pretrained_model: "fasterrcnn_resnet50_fpn"
 score_threshold: 0.9
 max_frame_track: 30
 byte_track_embedder: "mobilenet"
-lines_file_path: "lines_data/2024_0323_120137_100A_line_data_2_3_2.csv"
+lines_file_path: "./lines_data/cam_line_data_3_3_2.csv"
 camera_index: 0
 live: True
 img_size: 640
-show: False
+show: True
 cls_to_track:
   - 1
   - 2
