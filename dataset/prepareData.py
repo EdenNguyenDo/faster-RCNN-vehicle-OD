@@ -13,7 +13,7 @@ This script create functions for transforming annotations and loading data.
 """
 
 def load_images_and_anns(im_dir, ann_dir, label2idx):
-    r"""
+    """
     Method to get the xml files and for each file
     get all the objects and their ground truth detection
     information for the dataset
@@ -56,6 +56,30 @@ def load_images_and_anns(im_dir, ann_dir, label2idx):
 
 
 class VtodDataset(Dataset):
+    """
+    A dataset class for loading images and corresponding annotations for a vehicle
+    type object detection task.
+
+    This dataset handles images and their respective annotations based on the
+    provided directory paths, maps class labels to indices, and enables access
+    to image data and its metadata. The dataset supports data augmentation during
+    training, specifically horizontal flipping of images.
+
+    :ivar split: The split type of the dataset (e.g., 'train', 'val', 'test'). Determines
+        if augmentation is applied.
+    :type split: str
+    :ivar im_dir: The directory path containing image files.
+    :type im_dir: str
+    :ivar ann_dir: The directory path containing annotation files.
+    :type ann_dir: str
+    :ivar label2idx: A dictionary mapping class labels to numeric indices.
+    :type label2idx: dict
+    :ivar idx2label: A dictionary mapping numeric indices to class labels.
+    :type idx2label: dict
+    :ivar images_info: A list containing metadata for each image and its detections.
+        The metadata includes filename, bounding boxes, and class labels.
+    :type images_info: list
+    """
     def __init__(self, split, im_dir, ann_dir):
         self.split = split
         self.im_dir = im_dir

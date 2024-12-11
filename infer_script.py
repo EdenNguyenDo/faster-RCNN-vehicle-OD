@@ -109,7 +109,7 @@ def infer_realtime(args):
 
                 # if frame_count % frame_interval ==0:
 
-                if args.img_size is not None:
+                if args.img_size != 0:
                     resized_frame = cv2.resize(
                         cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
                         (args.img_size, args.img_size)
@@ -149,6 +149,8 @@ def infer_realtime(args):
                 track_end_time = time.time()
                 track_time = (track_end_time - track_start_time)
                 print(track_time)
+
+
                 # Extract original frame
                 # extract_frame(saved_frame_dir, frame, frame_count, video_name)
 

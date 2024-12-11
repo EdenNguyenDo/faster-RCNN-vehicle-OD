@@ -1,5 +1,5 @@
 camera_index: 0
-live: True
+live: False
 debug: False
 input_video: "./input_videos/2024_0323_120137_100A.MP4"
 lines_file_path: "./lines_data/cam_line_data_3_3_2.csv"
@@ -8,7 +8,7 @@ pretrained_model: "fasterrcnn_resnet50_fpn"
 score_threshold: 0.9
 max_frame_track: 30
 byte_track_embedder: "mobilenet"
-img_size: 640
+img_size: 0
 show: True
 cls_to_track:
   - 1
