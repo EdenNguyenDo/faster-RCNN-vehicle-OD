@@ -43,6 +43,7 @@ def setup_argument_parser(config_path):
     parser.add_argument(
         '--img_size',
         default=config.get('img_size'),
+        type = int,
         help='Image resize; e.g., 640 will resize images to 640x640'
     )
 
