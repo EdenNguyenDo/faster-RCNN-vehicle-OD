@@ -157,7 +157,7 @@ def infer_video(args):
             ################################################################################################################
 
             # Transform detection output to ones to be used by bytetracker - xyxy px,
-            detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
+            detections_bytetrack = transform_detection_output(detections, args.classes_to_track, args)
 
 
             if len(detections_bytetrack)>0:

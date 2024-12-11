@@ -119,7 +119,7 @@ def infer_realtime(args):
                 ################################################################################################################
 
                 # Transform detection output to ones to be used by bytetracker - xyxy px,
-                detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
+                detections_bytetrack = transform_detection_output(detections, args.classes_to_track, args)
 
                 if len(detections_bytetrack) > 0:
                     # if detections_bytetrack.dim() > 1:

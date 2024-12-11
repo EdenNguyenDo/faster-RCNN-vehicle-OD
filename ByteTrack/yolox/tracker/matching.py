@@ -49,45 +49,6 @@ def linear_assignment(cost_matrix, thresh):
     return matches, unmatched_a, unmatched_b
 
 
-# def linear_assignment(cost_matrix: np.ndarray, thresh: float) -> tuple:
-#     if cost_matrix.size == 0:
-#         return np.empty((0, 2), dtype=int), tuple(range(cost_matrix.shape[0])), tuple(range(cost_matrix.shape[1]))
-#
-#     x, y = scipy.optimize.linear_sum_assignment(cost_matrix)  # row x, col y
-#     matches = np.asarray([[x[i], y[i]] for i in range(len(x)) if cost_matrix[x[i], y[i]] <= thresh])
-#     if len(matches) == 0:
-#         unmatched_a = np.arange(cost_matrix.shape[0])
-#         unmatched_b = np.arange(cost_matrix.shape[1])
-#     else:
-#         unmatched_a = np.asarray(set(np.arange(cost_matrix.shape[0])) - set(matches[:, 0]))
-#         unmatched_b = np.asarray(set(np.arange(cost_matrix.shape[1])) - set(matches[:, 1]))
-#
-#     return matches, unmatched_a, unmatched_b
-
-#
-# def linear_assignment(cost_matrix: np.ndarray, thresh: float) -> tuple:
-#     # Return empty results if the cost matrix is empty
-#     if cost_matrix.size == 0:
-#         return np.empty((0, 2), dtype=int), np.array([]), np.array([])
-#
-#     # Perform linear sum assignment to find optimal match pairs
-#     x, y = scipy.optimize.linear_sum_assignment(cost_matrix)  # row x, col y
-#
-#     # Filter matches by threshold
-#     matches = np.asarray([[x[i], y[i]] for i in range(len(x)) if cost_matrix[x[i], y[i]] <= thresh])
-#
-#     if len(matches) == 0:
-#         # No valid matches found
-#         unmatched_a = np.arange(cost_matrix.shape[0])
-#         unmatched_b = np.arange(cost_matrix.shape[1])
-#     else:
-#         # Find unmatched rows and columns
-#         unmatched_a = np.setdiff1d(np.arange(cost_matrix.shape[0]), matches[:, 0])
-#         unmatched_b = np.setdiff1d(np.arange(cost_matrix.shape[1]), matches[:, 1])
-#
-#     # Ensure to return np.ndarray consistently
-#     return matches, unmatched_a, unmatched_b
-
 
 
 def ious(atlbrs, btlbrs):

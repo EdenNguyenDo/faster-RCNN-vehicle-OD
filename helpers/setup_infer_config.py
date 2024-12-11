@@ -72,6 +72,13 @@ def setup_argument_parser(config_path):
     )
 
     parser.add_argument(
+        '--detect_threshold',
+        default=config.get('detect_threshold'),
+        type=float,
+        help='Score threshold to filter out track objects'
+    )
+
+    parser.add_argument(
         '--max_frame_track',
         default=config.get('max_frame_track'),
         type=int,
