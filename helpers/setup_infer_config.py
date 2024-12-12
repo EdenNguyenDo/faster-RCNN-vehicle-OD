@@ -16,6 +16,12 @@ def setup_argument_parser(config_path):
     )
 
     parser.add_argument(
+        '--save_det',
+        default=config.get('save_detection'),
+        help='Indicator of savinga all detections produced'
+    )
+
+    parser.add_argument(
         '--camera_index',
         default=config.get('camera_index'),
         help='Index of the camera to be accessed by the model for real-time inference'
