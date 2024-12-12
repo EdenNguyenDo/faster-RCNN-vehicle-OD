@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import torch
-from shapely.geometry import Polygon, Point
+import os
+import csv
 
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 
@@ -96,10 +97,11 @@ def plot_tracking(image, track_history):
     return im
 
 
-def transform_detection_output(detections, classes):
+def transform_detection_output(detections, classes, detect_threshold):
     """
-    Convert the detection output of Faster R-CNN to the format used by ByteTrack
+    Convert the detection output of Faster R-CNN to the format used by ByteTrack.
 
+    :param detect_threshold:
     :param classes:
     :param detections:
     :return: outputs - tensorized detections
@@ -107,7 +109,7 @@ def transform_detection_output(detections, classes):
     boxes = detections['boxes'].cpu().numpy()
     labels = detections['labels'].cpu().numpy()
     scores = detections['scores'].cpu().numpy()
-    lbl_mask = np.isin(labels, classes)
+    lbl_mask = np.isin(labels, classes) & (scores > detect_threshold)
     scores = scores[lbl_mask]
     labels = labels[lbl_mask]
     boxes = boxes[lbl_mask]
@@ -123,3 +125,41 @@ def transform_detection_output(detections, classes):
     outputs = torch.tensor(outputs, dtype=torch.float32)
 
     return outputs
+
+
+
+def save_detection_output(filepath, frame_number, detections, classes, detect_threshold):
+    """
+    Convert the detection output of Faster R-CNN to the format used by ByteTrack.
+
+    :param detect_threshold:
+    :param args:
+    :param classes:
+    :param detections:
+    :return: outputs - tensorized detections
+    """
+    boxes = detections['boxes'].cpu().numpy()
+    labels = detections['labels'].cpu().numpy()
+    scores = detections['scores'].cpu().numpy()
+    lbl_mask = np.isin(labels, classes) & (scores > detect_threshold)
+    scores = scores[lbl_mask]
+    labels = labels[lbl_mask]
+    boxes = boxes[lbl_mask]
+    outputs = []
+    for i, box in enumerate(boxes):
+        label = labels[i]
+        score =  scores[i]
+        xmin, ymin, xmax, ymax = boxes[i]
+        output = [xmin, ymin, xmax, ymax, score, label]
+        outputs.append(output)
+
+
+    # Append outputs to the CSV file
+    with open(filepath, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        # Write the header only if the file does not exist
+        if file.tell() ==0:
+            writer.writerow(['xmin', 'ymin', 'xmax', 'ymax', 'score', 'label'])
+        # Write each detection output
+        writer.writerows(outputs)
+

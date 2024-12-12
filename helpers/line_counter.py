@@ -135,7 +135,6 @@ class LineCounter:
             self.cross_product[tid][count_line_id] = cross_product_line((x_centre, y_centre), start, end)
 
             current_cp = self.cross_product[tid][count_line_id]
-            # cv2.line(frame, (int(x_centre), int(y_centre)), end, color=(0, 10, 255), thickness=1)
             if current_cp >= 0:
                 self.current_side[tid][count_line_id] = 'positive'
             elif current_cp < 0:
@@ -180,6 +179,12 @@ class LineCounter:
 
         return self.region_counts, object_direction, tracked, hit  #, self.lane_list
 
+
+    def first_appear(self, tid):
+        tracked = False
+        if self.tracked_object[tid] is False:
+            tracked = self.tracked_object[tid] = True
+        return tracked
 
 
 

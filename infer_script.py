@@ -9,10 +9,10 @@ import time
 from ByteTrack.bytetrackCustom.bytetrack_main import ByteTracker
 from helpers.setup_infer_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
-from helpers.save_count_data import create_count_files
+from helpers.save_count_data import create_count_files, create_log_files, create_detection_files
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
-from ByteTrack.bytetrackCustom.bytetrack_utils import transform_detection_output
+from ByteTrack.bytetrackCustom.bytetrack_utils import transform_detection_output, save_detection_output
 
 """
 Running inference with object tracking with faster R-CNN model
@@ -24,14 +24,14 @@ Running inference with object tracking with faster R-CNN model
 """
 
 np.random.seed(3101)
-OUT_DIR = 'output_frcnn-ds'
-os.makedirs(OUT_DIR, exist_ok=True)
+# OUT_DIR = 'output_frcnn-ds'
+# os.makedirs(OUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
 COLORS = np.random.randint(0, 255, size=(len(COCO_91_CLASSES), 3))
 results = []
 
 
-def infer_realtime(args):
+def infer(args):
     """
     This function runs inference using loaded model frame by frame while saving the annotation of each frame into a predefined format
     Then each individual frame is aggregated to create an annotated video.
@@ -43,6 +43,12 @@ def infer_realtime(args):
 
 
     count_filepath, total_count_filepath = create_count_files(args)
+    log_filepath, video_directory_path =  create_log_files(args)
+    det_filepath = create_detection_files(args)
+
+
+
+
     main_tracker = ByteTracker(args)
     line_counter = LineCounter(args.lines_data)
 
@@ -74,7 +80,7 @@ def infer_realtime(args):
 
     # Define codec and create VideoWriter object.
     out = cv2.VideoWriter(
-        f"{OUT_DIR}/{video_name}_{args.pretrained_model}_{args.embedder}.mp4",
+        f"{video_directory_path}/{video_name}_{args.pretrained_model}_{args.embedder}.mp4",
         cv2.VideoWriter_fourcc(*'mp4v'), frame_fps,
         (frame_width, frame_height)
     )
@@ -105,7 +111,7 @@ def infer_realtime(args):
                     break
 
                 # draw user defined lines on page
-                line_counter.draw_lines(frame)
+                #line_counter.draw_lines(frame)
 
                 # if frame_count % frame_interval ==0:
 
@@ -125,21 +131,24 @@ def infer_realtime(args):
                     detections = model([frame_tensor])[0]
                 det_end_time = time.time()
                 det_time = (det_end_time - det_start_time)
-                print(det_time)
+
                 ################################################################################################################
                 ########################################## Byte Track Integration ##############################################
                 ################################################################################################################
 
                 # Transform detection output to ones to be used by bytetracker - xyxy px,
-                detections_bytetrack = transform_detection_output(detections, args.classes_to_track)
+                detections_bytetrack = transform_detection_output(detections, args.classes_to_track, args.detect_threshold)
 
 
                 track_start_time = time.time()
                 if len(detections_bytetrack) > 0:
-                    # if detections_bytetrack.dim() > 1:
-                    online_im, region_counts = main_tracker.startTrack(frame, detections_bytetrack, frame_count,
-                                                                       count_filepath)
+                    online_im, region_counts = main_tracker.startTrack(detections_bytetrack, count_filepath, frame,
+                                                                       frame_count, log_filepath)
                     class_count_dict = process_count(region_counts, args.classes_to_track)
+
+                    # TODO save detection for running with tracking
+                    if args.save_det:
+                        save_detection_output(det_filepath, frame_count, detections, args.classes_to_track, args.detect_threshold)
 
                     # Write the total count dictionary to the JSON file, overwriting existing total counts
                     # with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
@@ -147,9 +156,13 @@ def infer_realtime(args):
                 else:
                     online_im = frame
                 track_end_time = time.time()
-                track_time = (track_end_time - track_start_time)
-                print(track_time)
+                track_time = round((track_end_time - track_start_time),5)
 
+                if track_time>0:
+                    with open("track_time.csv", "a", newline='', encoding='utf-8') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([round(track_time, 5)])
+                
 
                 # Extract original frame
                 # extract_frame(saved_frame_dir, frame, frame_count, video_name)
@@ -166,13 +179,15 @@ def infer_realtime(args):
 
                 frame_count += 1
 
+                det_fps = 1 / (time.time() - det_start_time)
+
                 if args.debug_mode is True:
                     print(f"Frame {frame_count}",
-                          f"Detection FPS: {det_time:.2f}")
+                          f"Detection FPS: {det_fps:.2f}")
 
                 cv2.putText(
                     online_im,
-                    f"Det: {det_time:.5f} --- Track: {track_time:.5f}",
+                    f"{det_fps:.1f}- Det:{det_time:.3f} - Track:{track_time:.3f}",
                     (int(20), int(40)),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=1,
@@ -208,9 +223,9 @@ def infer_realtime(args):
 
             # frame_count+=1
 
-    except Exception as e:
-        completed_successfully = False  # Set the flag to False if an exception is caught.
-        print(f"An interruption occurred: {e}")
+    # except Exception as e:
+    #     completed_successfully = False  # Set the flag to False if an exception is caught.
+    #     print(f"An interruption occurred: {e}")
 
     finally:
     # Release resources.
@@ -229,4 +244,4 @@ def infer_realtime(args):
 
 if __name__ == '__main__':
     args = setup_argument_parser('config/infer_config.yaml').parse_args()
-    infer_realtime(args)
+    infer(args)

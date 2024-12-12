@@ -55,6 +55,76 @@ def create_count_files(args):
 
     return filepath, json_filepath
 
+
+def create_log_files(args):
+    """
+    This function creates count files for a video inference.
+    The file name would consist of the camera or footage name + the datetime when inferences are produced.
+    :param args:
+    :return:
+    """
+    live = args.live
+    current_time = time.localtime()
+    formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
+    base_dir = get_base_directory()
+
+    if not live:
+        video_name = args.input_video.split('/')[-1].split('.')[0]
+        video_dir = args.input_video.split('/')[-2]
+        date_video_name = video_name + "_" + formatted_time
+    else:
+        video_name = "cam1"
+        video_dir = "live_webcam"
+        date_video_name = video_name + "_" + formatted_time
+
+    # Construct the path for saved counts in the application's directory
+    saved_log_dir = os.path.join(base_dir, 'saved_inferred_log', video_dir)
+    directory_path = os.path.join(saved_log_dir, video_name)
+
+    # Ensure the directory exists
+    os.makedirs(directory_path, exist_ok=True)
+
+    filename = f"{date_video_name}_log.csv"
+
+    filepath = os.path.join(directory_path, filename)
+
+    return filepath, directory_path
+
+def create_detection_files(args):
+    """
+    This function creates count files for a video inference.
+    The file name would consist of the camera or footage name + the datetime when inferences are produced.
+    :param args:
+    :return:
+    """
+    live = args.live
+    current_time = time.localtime()
+    formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
+    base_dir = get_base_directory()
+
+    if not live:
+        video_name = args.input_video.split('/')[-1].split('.')[0]
+        video_dir = args.input_video.split('/')[-2]
+        date_video_name = video_name + "_" + formatted_time
+    else:
+        video_name = "cam1"
+        video_dir = args.input_video.split('/')[-2]
+        date_video_name = video_name + "_" + formatted_time
+
+    # Construct the path for saved counts in the application's directory
+    saved_det_dir = os.path.join(base_dir, 'saved_all_detection', video_dir)
+    directory_path = os.path.join(saved_det_dir, video_name)
+
+    # Ensure the directory exists
+    os.makedirs(directory_path, exist_ok=True)
+
+    filename = f"{date_video_name}_detection.csv"
+
+    filepath = os.path.join(directory_path, filename)
+
+    return filepath
+
+
 def save_count_data(args, filepath, region_counts, direction, class_id, track_id, frame_number):
     """
     This function saves the counts_by_lines into the file created by the function above.
@@ -96,3 +166,47 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
         if file.tell() == 0:
             writer.writerow(["date", "time", "class_id", "track_id", "direction", "count"])
         writer.writerows(data_to_write)  # Write data rows
+
+
+
+def save_log(args, filepath, class_id, track_id, tlwh = None):
+    """
+    This function saves the counts_by_lines into the file created by the function above.
+    :param tlwh:
+    :param tlbr:
+    :param args:
+    :param filepath:
+    :param class_id:
+    :param track_id:
+    :param frame_number:
+    :return:
+    """
+    live = args.live
+    date = datetime.now().strftime("%Y-%m-%d")
+
+    if not live:
+        video_name = args.input_video.split('/')[-1].split('.')[0]
+        #time_mili = f"{video_name}_{round(frame_number/30, 3)}"
+        time_mili = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Strip milliseconds for better readability
+    else:
+        time_mili = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Strip milliseconds for better readability
+
+    # Collect data to write
+    data_to_write = []
+
+    data_to_write.append([
+        date,  # Use generated timestamp
+        time_mili,
+        class_id,
+        track_id,
+        tlwh[0], tlwh[1], tlwh[2], tlwh[3]
+    ])
+
+    # Write the data to a CSV file
+    with open(filepath, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        # Write header only if the file does not exist or is empty
+        if file.tell() == 0:
+            writer.writerow(["date", "timestamp", "class_id", "track_id", "x", "y", "w", "h"])
+        writer.writerows(data_to_write)  # Write data rows
+

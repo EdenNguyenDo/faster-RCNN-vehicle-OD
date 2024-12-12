@@ -6,7 +6,8 @@ from ByteTrack.bytetrackCustom.bytetrack_args import ByteTrackArgument
 from ByteTrack.bytetrackCustom.bytetrack_utils import plot_tracking
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from helpers.line_counter import LineCounter
-from helpers.save_count_data import save_count_data
+from helpers.save_count_data import save_count_data, save_log
+import json
 
 
 class ByteTracker:
@@ -63,7 +64,7 @@ class ByteTracker:
 
 
 
-    def startTrack(self, frame, detections_bytetrack, frame_count, count_filepath):
+    def startTrack(self, detections_bytetrack, count_filepath, frame = None, frame_count = None, log_filepath = None):
         """
         Starts the tracking process for identified objects in a video frame. It updates
         trackers for each object class, processes the detection outputs, counts objects,
@@ -106,29 +107,37 @@ class ByteTracker:
                     if tlwh[2] * tlwh[3] > ByteTrackArgument.min_box_area and not vertical:
                         online_tlwhs.append(tlwh)
 
-                        # use the trackings' output bbox locations to detect objects, with counts and direction detection
-                        self.region_counts, direction, tracked, hit = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, frame)
+                        # # use the trackings' output bbox locations to detect objects, with counts and direction detection
+                        # self.region_counts, direction, tracked, hit = self.line_counter.perform_count_line_detections(class_id, tid, tlbr, frame)
+                        #
+                        # if tracked and hit:
+                        #     # save the count into the file
+                        #     save_count_data(self.args, count_filepath, self.region_counts, direction, class_id, tid, frame_count)
 
-                        if tracked and hit:
-                            # save the count into the file
-                            save_count_data(self.args, count_filepath, self.region_counts, direction, class_id, tid, frame_count)
+                        tlwh_box = [int(tlwh[0]), int(tlwh[1]), int(tlwh[2]), int(tlwh[3])]
 
 
                         # Get the xml output for saving into annotation file
-                        tlbr_box = [tlbr[0], tlbr[1], tlbr[2], tlbr[3]]
-                        self.detection_output_xml['trackIDs'].append(tid)
+                        tlbr_box = [int(tlbr[0]), int(tlbr[1]), int(tlbr[2]), int(tlbr[3])]
+                        self.detection_output_xml['trackIDs'].append(int(tid))
                         self.detection_output_xml['boxes'].append(tlbr_box)
-                        self.detection_output_xml['labels'].append(class_id)
-                        self.detection_output_xml['scores'].append(t.score)
+                        self.detection_output_xml['labels'].append(int(class_id))
+                        self.detection_output_xml['scores'].append(float(t.score))
+
+
+                        # Save all track ids that has confidence score over 0.9
+                        if self.line_counter.first_appear(tid) is True:
+                            save_log(self.args, log_filepath, class_id, tid, tlwh_box)
+
 
                         online_ids.append(tid)
                         online_scores.append(t.score)
-                        tlwh_box = (tlwh[0], tlwh[1], tlwh[2], tlwh[3])
 
                         self.results.append(
                             # frame_id, track_id, tl_x, tl_y, w, h, score = obj_prob * class_prob, class_idx, dummy, dummy, dummy
                             f"{frame_count},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}, {class_id}\n"
                         )
+
 
                 self.all_tlwhs += online_tlwhs
                 self.all_ids += online_ids
