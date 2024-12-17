@@ -47,6 +47,13 @@ def setup_argument_parser(config_path):
     )
 
     parser.add_argument(
+        '--video_list',
+        nargs='+',
+        default=config.get('video_list'),
+        help='video to be ran on'
+    )
+
+    parser.add_argument(
         '--img_size',
         default=config.get('img_size'),
         type = int,
@@ -121,6 +128,7 @@ def setup_argument_parser(config_path):
         type=int,
         help='Which classes to track'
     )
+
 
     parser.add_argument(
         '--evaluate',

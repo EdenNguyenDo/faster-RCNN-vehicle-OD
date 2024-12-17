@@ -21,20 +21,19 @@ def get_base_directory():
 
     return base_dir
 
-def create_count_files(args):
+def create_count_files(live, video):
     """
     This function creates count files for a video inference.
     The file name would consist of the camera or footage name + the datetime when inferences are produced.
     :param args:
     :return:
     """
-    live = args.live
     current_time = time.localtime()
     formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
     base_dir = get_base_directory()
 
     if not live:
-        video_name = args.input_video.split('/')[-1].split('.')[0]
+        video_name = video.split('/')[-1].split('.')[0]
         date_video_name = video_name + "_" + formatted_time
     else:
         video_name = "cam1"
@@ -56,21 +55,20 @@ def create_count_files(args):
     return filepath, json_filepath
 
 
-def create_log_files(args):
+def create_log_files(live, video):
     """
     This function creates count files for a video inference.
     The file name would consist of the camera or footage name + the datetime when inferences are produced.
     :param args:
     :return:
     """
-    live = args.live
     current_time = time.localtime()
     formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
     base_dir = get_base_directory()
 
     if not live:
-        video_name = args.input_video.split('/')[-1].split('.')[0]
-        video_dir = args.input_video.split('/')[-2]
+        video_name = video.split('/')[-1].split('.')[0]
+        video_dir = video.split('/')[-2]
         date_video_name = video_name + "_" + formatted_time
     else:
         video_name = "cam1"
@@ -90,39 +88,46 @@ def create_log_files(args):
 
     return filepath, directory_path
 
-def create_detection_files(args):
+
+def create_detection_directory(live, video):
     """
-    This function creates count files for a video inference.
+    This function creates detection files for a video inference in JSON format.
     The file name would consist of the camera or footage name + the datetime when inferences are produced.
     :param args:
     :return:
     """
-    live = args.live
     current_time = time.localtime()
     formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
     base_dir = get_base_directory()
 
     if not live:
-        video_name = args.input_video.split('/')[-1].split('.')[0]
-        video_dir = args.input_video.split('/')[-2]
+        video_name = video.split('/')[-1].split('.')[0]
+        video_dir = video.split('/')[-2]
         date_video_name = video_name + "_" + formatted_time
     else:
         video_name = "cam1"
-        video_dir = args.input_video.split('/')[-2]
+        video_dir = video.split('/')[-2]
         date_video_name = video_name + "_" + formatted_time
 
     # Construct the path for saved counts in the application's directory
     saved_det_dir = os.path.join(base_dir, 'saved_all_detection', video_dir)
-    directory_path = os.path.join(saved_det_dir, video_name)
+
+    saved_raw_det_dir = os.path.join(base_dir, 'saved_raw_detections', video_dir)
+
+    det_directory_path = os.path.join(saved_det_dir, video_name)
+    raw_directory_path = os.path.join(saved_raw_det_dir, video_name)
 
     # Ensure the directory exists
-    os.makedirs(directory_path, exist_ok=True)
+    os.makedirs(det_directory_path, exist_ok=True)
+    os.makedirs(raw_directory_path, exist_ok=True)
 
-    filename = f"{date_video_name}_detection.csv"
+    det_filename = f"{date_video_name}_detection"
+    raw_filename = f"{date_video_name}_raw_detection"
 
-    filepath = os.path.join(directory_path, filename)
+    det_filepath = os.path.join(det_directory_path, det_filename)
+    raw_filepath = os.path.join(raw_directory_path, raw_filename)
 
-    return filepath
+    return det_filepath, raw_filepath
 
 
 def save_count_data(args, filepath, region_counts, direction, class_id, track_id, frame_number):
@@ -169,9 +174,11 @@ def save_count_data(args, filepath, region_counts, direction, class_id, track_id
 
 
 
-def save_log(args, filepath, class_id, track_id, tlwh = None):
+def save_log(live, video, filepath, class_id, track_id, tlwh = None):
     """
     This function saves the counts_by_lines into the file created by the function above.
+    :param video:
+    :param live:
     :param tlwh:
     :param tlbr:
     :param args:
@@ -181,11 +188,10 @@ def save_log(args, filepath, class_id, track_id, tlwh = None):
     :param frame_number:
     :return:
     """
-    live = args.live
     date = datetime.now().strftime("%Y-%m-%d")
 
     if not live:
-        video_name = args.input_video.split('/')[-1].split('.')[0]
+        #video_name = video.split('/')[-1].split('.')[0]
         #time_mili = f"{video_name}_{round(frame_number/30, 3)}"
         time_mili = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Strip milliseconds for better readability
     else:

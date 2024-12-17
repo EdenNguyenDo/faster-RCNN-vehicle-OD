@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import os
 import csv
+import json
 
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 
@@ -127,39 +128,43 @@ def transform_detection_output(detections, classes, detect_threshold):
     return outputs
 
 
+def save_detections(filedir, frame_number, detections, classes, detect_threshold, raw=False):
 
-def save_detection_output(filepath, frame_number, detections, classes, detect_threshold):
-    """
-    Convert the detection output of Faster R-CNN to the format used by ByteTrack.
-
-    :param detect_threshold:
-    :param args:
-    :param classes:
-    :param detections:
-    :return: outputs - tensorized detections
-    """
     boxes = detections['boxes'].cpu().numpy()
     labels = detections['labels'].cpu().numpy()
     scores = detections['scores'].cpu().numpy()
-    lbl_mask = np.isin(labels, classes) & (scores > detect_threshold)
+
+    # Filter boxes, labels, and scores based on classes and thresholds
+    if raw is False:
+        lbl_mask = np.isin(labels, classes) & (scores > detect_threshold)
+    else:
+        lbl_mask = np.isin(labels, classes)
+
     scores = scores[lbl_mask]
     labels = labels[lbl_mask]
     boxes = boxes[lbl_mask]
+
     outputs = []
     for i, box in enumerate(boxes):
-        label = labels[i]
-        score =  scores[i]
-        xmin, ymin, xmax, ymax = boxes[i]
+        label = int(labels[i])  # Ensure labels are converted to Python int
+        score = float(scores[i])  # Convert Numpy float32 to Python float
+        xmin, ymin, xmax, ymax = map(float, box)  # Convert all box coordinates to Python float
         output = [xmin, ymin, xmax, ymax, score, label]
         outputs.append(output)
 
+    # Ensure the output directory exists
+    os.makedirs(filedir, exist_ok=True)
 
-    # Append outputs to the CSV file
-    with open(filepath, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        # Write the header only if the file does not exist
-        if file.tell() ==0:
+    # Create a unique file path for the frame number
+    filepath = os.path.join(filedir, f"{frame_number}.csv")
+
+    # Only write to the file if it does not already exist
+    if not os.path.exists(filepath):
+        with open(filepath, mode='w', newline='') as file:  # 'w' ensures the file is created
+            writer = csv.writer(file)
+            # Write the header
             writer.writerow(['xmin', 'ymin', 'xmax', 'ymax', 'score', 'label'])
-        # Write each detection output
-        writer.writerows(outputs)
+            # Write each detection output
+            writer.writerows(outputs)
+
 

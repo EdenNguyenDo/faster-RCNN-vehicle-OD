@@ -64,13 +64,14 @@ class ByteTracker:
 
 
 
-    def startTrack(self, detections_bytetrack, count_filepath, frame = None, frame_count = None, log_filepath = None):
+    def startTrack(self, detections_bytetrack, count_filepath, video, frame = None, frame_count = None, log_filepath = None):
         """
         Starts the tracking process for identified objects in a video frame. It updates
         trackers for each object class, processes the detection outputs, counts objects,
         and generates tracking results for visualization and further analysis.
         Additionally, it saves detection and tracking information for further usage.
 
+        :param video:
         :param frame: Video frame data for the current time step in the tracking process.
         :param detections_bytetrack: Array containing transformed detections made by the faster R-CNN model
             for the current frame, where each detection includes bounding box coordinates,
@@ -127,7 +128,7 @@ class ByteTracker:
 
                         # Save all track ids that has confidence score over 0.9
                         if self.line_counter.first_appear(tid) is True:
-                            save_log(self.args, log_filepath, class_id, tid, tlwh_box)
+                            save_log(self.args.live, video, log_filepath, class_id, tid, tlwh_box)
 
 
                         online_ids.append(tid)
