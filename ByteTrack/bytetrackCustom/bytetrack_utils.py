@@ -138,7 +138,7 @@ def save_detections(filedir, frame_number, detections, classes, detect_threshold
     if raw is False:
         lbl_mask = np.isin(labels, classes) & (scores > detect_threshold)
     else:
-        lbl_mask = np.isin(labels, classes)
+        lbl_mask = np.isin(labels, classes > 0.1)
 
     scores = scores[lbl_mask]
     labels = labels[lbl_mask]

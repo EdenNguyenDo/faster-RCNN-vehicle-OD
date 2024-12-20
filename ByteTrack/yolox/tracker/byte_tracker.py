@@ -45,7 +45,7 @@ class STrack(BaseTrack):
         self.state = TrackState.Tracked
         if frame_id == 1:
             self.is_activated = True
-        # self.is_activated = True
+        self.is_activated = True
         self.frame_id = frame_id
         self.start_frame = frame_id
 
@@ -321,15 +321,22 @@ def sub_stracks(tlista, tlistb):
 
 def remove_duplicate_stracks(stracksa, stracksb):
     pdist = iou_distance(stracksa, stracksb)
-    pairs = np.where(pdist < 0.15)
+    frame_gaps = np.array([[abs(a.frame_id - b.frame_id) for b in stracksb] for a in stracksa])
+    pdist[frame_gaps > 150] = 1.0  # Prevent matching far-apart frames
+    pairs = np.where(pdist < 0.3)
     dupa, dupb = list(), list()
     for p, q in zip(*pairs):
         timep = stracksa[p].frame_id - stracksa[p].start_frame
         timeq = stracksb[q].frame_id - stracksb[q].start_frame
+
+        print(f"Potential duplicate: Track {stracksa[p].track_id} (frame {stracksa[p].frame_id}) "
+              f"with Track {stracksb[q].track_id} (frame {stracksb[q].frame_id})")
         if timep > timeq:
             dupb.append(q)
         else:
             dupa.append(p)
     resa = [t for i, t in enumerate(stracksa) if not i in dupa]
     resb = [t for i, t in enumerate(stracksb) if not i in dupb]
+    print(f"Removed {len(dupa)} and {len(dupb)} duplicates")
+
     return resa, resb

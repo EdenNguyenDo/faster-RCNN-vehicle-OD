@@ -135,7 +135,7 @@ def infer(args):
                     det_end_time = time.time()
                     det_time = (det_end_time - det_start_time)
 
-                    # Save raw detection
+                    # Save raw detection if there is detections
                     if len(detections['labels'])>0:
                         save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold, raw=True)
 

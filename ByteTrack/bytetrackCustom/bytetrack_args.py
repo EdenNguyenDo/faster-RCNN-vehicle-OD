@@ -4,8 +4,9 @@ class ByteTrackArgument:
     Argument for ByteTrack detection and tracking.
     """
 
-    track_thresh = 0.7 # High_threshold
-    track_buffer = 50 # Number of frame lost tracklets are kept
+    track_thresh = 0.7
+    # High_threshold
+    track_buffer = 70 # Number of frame lost tracklets are kept
     match_thresh = 0.8 # Matching threshold for first stage linear assignment
     aspect_ratio_thresh = 10.0 # Minimum bounding box aspect ratio
     min_box_area = 1.0 # Minimum bounding box area
