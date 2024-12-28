@@ -1,0 +1,99 @@
+confidence: 0.8
+number_of_trackers: 9
+track_thresh : 0.7 # High_threshold
+track_buffer : 50 # Number of frame lost tracklets are kept
+match_thresh : 0.8 # Matching threshold for first stage linear assignment
+aspect_ratio_thresh : 10.0 # Minimum bounding box aspect ratio
+min_box_area : 1.0 # Minimum bounding box area
+mot20 : False # If used, bounding boxes are not clipped.
+MIN_THRESHOLD : 0.001
+detection_folder: 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2024_1213_144222_detection'
+detection_folder_list:
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2024_1218_104501_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_161046_003A/2024_1204_161046_003A_2024_1213_163651_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_164045_004A/2024_1204_164045_004A_2024_1213_170948_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_171044_005A/2024_1204_171044_005A_2024_1213_172407_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_174043_006A/2024_1204_174043_006A_2024_1213_173825_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_181042_007A/2024_1204_181042_007A_2024_1213_175244_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_184041_008A/2024_1204_184041_008A_2024_1213_180702_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_191039_009A/2024_1204_191039_009A_2024_1213_182119_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_194038_010A/2024_1204_194038_010A_2024_1213_183537_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_201038_011A/2024_1204_201038_011A_2024_1213_185001_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_204036_012A/2024_1204_204036_012A_2024_1213_190419_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_054019_030A/2024_1205_054019_030A_2024_1213_191837_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_061018_031A/2024_1205_061018_031A_2024_1213_193257_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_064017_032A/2024_1205_064017_032A_2024_1213_194716_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_071016_033A/2024_1205_071016_033A_2024_1213_200134_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_074015_034A/2024_1205_074015_034A_2024_1213_201553_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_081014_035A/2024_1205_081014_035A_2024_1213_203011_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_081014_035A2024_1205_081014_035A/2024_1205_081014_035A2024_1205_081014_035A_2024_1213_204431_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_091012_037A/2024_1205_091012_037A_2024_1213_205850_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_094011_038A/2024_1205_094011_038A_2024_1213_211309_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_101010_039A/2024_1205_101010_039A_2024_1213_212728_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_104009_040A/2024_1205_104009_040A_2024_1213_214147_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_111008_041A/2024_1205_111008_041A_2024_1213_215606_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_114006_042A/2024_1205_114006_042A_2024_1213_221026_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_121005_043A/2024_1205_121005_043A_2024_1213_222447_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_124004_044A/2024_1205_124004_044A_2024_1213_223907_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_131003_045A/2024_1205_131003_045A_2024_1213_225327_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_134002_046A/2024_1205_134002_046A_2024_1213_230747_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_141001_047A/2024_1205_141001_047A_2024_1213_232207_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_144000_048A/2024_1205_144000_048A_2024_1213_233628_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_150959_049A/2024_1205_150959_049A_2024_1213_235052_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_153958_050A/2024_1205_153958_050A_2024_1214_000511_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_160957_051A/2024_1205_160957_051A_2024_1214_001934_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_163956_052A/2024_1205_163956_052A_2024_1214_003355_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_170955_053A/2024_1205_170955_053A_2024_1214_004816_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_173953_054A/2024_1205_173953_054A_2024_1214_010237_raw_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1205_180952_055A/2024_1205_180952_055A_2024_1214_011657_raw_detection'
+
+
+
+
+
+
+
+
+
+
+
+
+
+hey:
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2024_1218_104501_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_161046_003A/2024_1204_161046_003A_2024_1213_163651_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_164045_004A/2024_1204_164045_004A_2024_1213_170948_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_171044_005A/2024_1204_171044_005A_2024_1213_172407_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_174043_006A/2024_1204_174043_006A_2024_1213_173825_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_181042_007A/2024_1204_181042_007A_2024_1213_175244_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_184041_008A/2024_1204_184041_008A_2024_1213_180702_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_191039_009A/2024_1204_191039_009A_2024_1213_182119_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_194038_010A/2024_1204_194038_010A_2024_1213_183537_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_201038_011A/2024_1204_201038_011A_2024_1213_185001_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1204_204036_012A/2024_1204_204036_012A_2024_1213_190419_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_054019_030A/2024_1205_054019_030A_2024_1213_191837_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_061018_031A/2024_1205_061018_031A_2024_1213_193257_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_064017_032A/2024_1205_064017_032A_2024_1213_194716_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_071016_033A/2024_1205_071016_033A_2024_1213_200134_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_074015_034A/2024_1205_074015_034A_2024_1213_201553_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_081014_035A/2024_1205_081014_035A_2024_1213_203011_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_081014_035A2024_1205_081014_035A/2024_1205_081014_035A2024_1205_081014_035A_2024_1213_204431_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_091012_037A/2024_1205_091012_037A_2024_1213_205850_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_094011_038A/2024_1205_094011_038A_2024_1213_211309_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_101010_039A/2024_1205_101010_039A_2024_1213_212728_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_104009_040A/2024_1205_104009_040A_2024_1213_214147_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_111008_041A/2024_1205_111008_041A_2024_1213_215606_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_114006_042A/2024_1205_114006_042A_2024_1213_221026_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_121005_043A/2024_1205_121005_043A_2024_1213_222447_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_124004_044A/2024_1205_124004_044A_2024_1213_223907_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_131003_045A/2024_1205_131003_045A_2024_1213_225327_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_134002_046A/2024_1205_134002_046A_2024_1213_230747_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_141001_047A/2024_1205_141001_047A_2024_1213_232207_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_144000_048A/2024_1205_144000_048A_2024_1213_233628_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_150959_049A/2024_1205_150959_049A_2024_1213_235052_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_153958_050A/2024_1205_153958_050A_2024_1214_000511_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_160957_051A/2024_1205_160957_051A_2024_1214_001934_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_163956_052A/2024_1205_163956_052A_2024_1214_003355_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_170955_053A/2024_1205_170955_053A_2024_1214_004816_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_173953_054A/2024_1205_173953_054A_2024_1214_010237_detection'
+  - 'C:/transmetric/dev/python/AI_camera/trial/faster-R-CNN-model/saved_all_detection/067-00007_Wed_Thur_27hrs_1500/2024_1205_180952_055A/2024_1205_180952_055A_2024_1214_011657_detection'

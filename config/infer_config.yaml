@@ -1,15 +1,22 @@
 camera_index: 0
 live: False
 debug: False
-input_video: "./input_videos/2024_0323_120137_100A.MP4"
-lines_file_path: "./lines_data/cam_line_data_3_3_2.csv"
+save_detection: True
+input_video: "C:/transmetric/trafficdata/video/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
+lines_file_path: "./lines_data/2024_0323_120137_100A_line_data_2_3_2.csv"
+
+
+video_list:
+  - "C:/transmetric/trafficdata/video/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
+
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
-score_threshold: 0.9
+score_threshold: 0.8
+detect_threshold: 0.8
 max_frame_track: 30
 byte_track_embedder: "mobilenet"
 img_size: 0
-show: True
+show: False
 cls_to_track:
   - 1
   - 2
