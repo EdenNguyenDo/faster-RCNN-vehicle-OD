@@ -7,7 +7,10 @@ lines_file_path: "./lines_data/2024_0323_120137_100A_line_data_2_3_2.csv"
 
 
 video_list:
-  - "C:/transmetric/trafficdata/video/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
+  - "C:\transmetric/trafficdata/video/manningham/20230725_070000.mp4"
+  - "C:/transmetric/trafficdata/video/manningham/20230725_150000.mp4"
+  - "C:/transmetric/trafficdata/video/manningham/20230726_070000.mp4"
+  - "C:/transmetric/trafficdata/video/manningham/20230726_150000.mp4"
 
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
@@ -16,7 +19,7 @@ detect_threshold: 0.8
 max_frame_track: 30
 byte_track_embedder: "mobilenet"
 img_size: 0
-show: False
+show: True
 cls_to_track:
   - 1
   - 2

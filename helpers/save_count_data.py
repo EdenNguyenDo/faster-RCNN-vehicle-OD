@@ -98,19 +98,20 @@ def create_detection_directory(live, video):
     """
     current_time = time.localtime()
     formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
-    base_dir = get_base_directory()
+    base_dir = "C:/transmetric/dev/python/AI_camera/detection_output"
+
 
     if not live:
         video_name = video.split('/')[-1].split('.')[0]
         video_dir = video.split('/')[-2]
         date_video_name = video_name + "_" + formatted_time
     else:
-        video_name = "cam1"
+        video_name = "live_cam"
         video_dir = video.split('/')[-2]
         date_video_name = video_name + "_" + formatted_time
 
     # Construct the path for saved counts in the application's directory
-    saved_det_dir = os.path.join(base_dir, 'saved_all_detection', video_dir)
+    saved_det_dir = os.path.join(base_dir, 'saved_all_filtered_detection', video_dir)
 
     saved_raw_det_dir = os.path.join(base_dir, 'saved_raw_detections', video_dir)
 

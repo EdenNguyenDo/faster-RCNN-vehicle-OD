@@ -6,6 +6,7 @@ import cv2
 import os
 import time
 
+from torchvision.ops import nms
 from ByteTrack.bytetrackCustom.bytetrack_main import ByteTracker
 from helpers.setup_infer_config import setup_argument_parser
 from helpers.line_counter import LineCounter, process_count
@@ -96,11 +97,6 @@ def infer(args):
                                 "vehicle type 5 - truck": 0}
 
 
-            # # Get the video's FPS (frames per second)
-            # fps = cap.get(cv2.CAP_PROP_FPS)
-            #
-            # # Set the frame interval to capture one frame every 3 seconds
-            # frame_interval = int(fps // 5)  # For 30 FPS, this equals 6 fps
             try:
                 completed_successfully = True
                 while cap.isOpened():
@@ -135,6 +131,8 @@ def infer(args):
                     det_end_time = time.time()
                     det_time = (det_end_time - det_start_time)
 
+
+
                     # Save raw detection if there is detections
                     if len(detections['labels'])>0:
                         save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold, raw=True)
@@ -152,9 +150,8 @@ def infer(args):
 
                         class_count_dict = process_count(region_counts, args.classes_to_track)
 
-                        # TODO save detection for running with tracking
-                        if args.save_det:
-                            save_detections(det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold, raw=False)
+                        # if args.save_det:
+                        #     save_detections(det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold, raw=False)
 
                         # Write the total count dictionary to the JSON file, overwriting existing total counts
                         # with open(total_count_filepath, 'w', encoding='utf-8') as json_file:
@@ -201,20 +198,20 @@ def infer(args):
                         lineType=cv2.LINE_AA
                     )
 
-                    # Display each class with its count
-                    y_position = 80  # Starting y-position for text display
-                    for class_name, count in class_count_dict.items():
-                        cv2.putText(
-                            online_im,
-                            f"{class_name}: {count}",
-                            (int(20), int(y_position)),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.5,  # Smaller font size
-                            color=(255, 0, 0),  # Blue color: (B, G, R)
-                            thickness=1,
-                            lineType=cv2.LINE_AA
-                        )
-                        y_position += 20  # Move down for the next class
+                    # # Display each class with its count
+                    # y_position = 80  # Starting y-position for text display
+                    # for class_name, count in class_count_dict.items():
+                    #     cv2.putText(
+                    #         online_im,
+                    #         f"{class_name}: {count}",
+                    #         (int(20), int(y_position)),
+                    #         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    #         fontScale=0.5,  # Smaller font size
+                    #         color=(255, 0, 0),  # Blue color: (B, G, R)
+                    #         thickness=1,
+                    #         lineType=cv2.LINE_AA
+                    #     )
+                    #     y_position += 20  # Move down for the next class
 
                     out.write(online_im)
 
@@ -228,9 +225,7 @@ def infer(args):
 
                 # frame_count+=1
 
-            except Exception as e:
-                completed_successfully = False  # Set the flag to False if an exception is caught.
-                print(f"An interruption occurred: {e}")
+
 
             finally:
             # Release resources.
