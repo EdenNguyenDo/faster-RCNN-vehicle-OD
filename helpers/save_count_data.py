@@ -89,7 +89,7 @@ def create_log_files(live, video):
     return filepath, directory_path
 
 
-def create_detection_directory(live, video):
+def create_detection_directory(live, video, output_dir):
     """
     This function creates detection files for a video inference in JSON format.
     The file name would consist of the camera or footage name + the datetime when inferences are produced.
@@ -98,7 +98,7 @@ def create_detection_directory(live, video):
     """
     current_time = time.localtime()
     formatted_time = time.strftime("%Y_%m%d_%H%M%S", current_time)
-    base_dir = "C:/transmetric/dev/python/AI_camera/detection_output"
+    base_dir = output_dir
 
 
     if not live:

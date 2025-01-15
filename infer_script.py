@@ -43,11 +43,6 @@ def infer(args):
     print(f"Re-ID embedder: {args.embedder}")
 
 
-
-
-
-
-
     main_tracker = ByteTracker(args)
     line_counter = LineCounter(args.lines_data)
 
@@ -67,7 +62,7 @@ def infer(args):
         for video in args.video_list:
             count_filepath, total_count_filepath = create_count_files(args.live, video)
             log_filepath, video_directory_path = create_log_files(args.live,video)
-            det_file_dir, raw_det_file_dir = create_detection_directory(args.live, video)
+            det_file_dir, raw_det_file_dir = create_detection_directory(args.live, video, args.detection_output_dir)
 
 
             cap = cv2.VideoCapture(video)
@@ -189,7 +184,7 @@ def infer(args):
 
                     cv2.putText(
                         online_im,
-                        f"{det_fps:.1f}- Det:{det_time:.3f}",
+                        f"{det_fps:.1f}- Frame:{frame_count:.3f}",
                         (int(20), int(40)),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                         fontScale=1,

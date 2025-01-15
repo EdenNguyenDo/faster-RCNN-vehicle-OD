@@ -47,6 +47,11 @@ def setup_argument_parser(config_path):
     )
 
     parser.add_argument(
+        '--detection_output_dir',
+        default=config.get('detection_output_dir')
+    )
+
+    parser.add_argument(
         '--video_list',
         nargs='+',
         default=config.get('video_list'),

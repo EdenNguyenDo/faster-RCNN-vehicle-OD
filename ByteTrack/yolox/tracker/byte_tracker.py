@@ -337,6 +337,5 @@ def remove_duplicate_stracks(stracksa, stracksb):
             dupa.append(p)
     resa = [t for i, t in enumerate(stracksa) if not i in dupa]
     resb = [t for i, t in enumerate(stracksb) if not i in dupb]
-    print(f"Removed {len(dupa)} and {len(dupb)} duplicates")
 
     return resa, resb

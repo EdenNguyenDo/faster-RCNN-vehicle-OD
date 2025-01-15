@@ -5,12 +5,9 @@ save_detection: True
 input_video: "C:/transmetric/trafficdata/video/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
 lines_file_path: "./lines_data/2024_0323_120137_100A_line_data_2_3_2.csv"
 
-
+detection_output_dir: "C:/transmetric/dev/python/AI_camera/output/detections/lincoln_drive"
 video_list:
-  - "C:\transmetric/trafficdata/video/manningham/20230725_070000.mp4"
-  - "C:/transmetric/trafficdata/video/manningham/20230725_150000.mp4"
-  - "C:/transmetric/trafficdata/video/manningham/20230726_070000.mp4"
-  - "C:/transmetric/trafficdata/video/manningham/20230726_150000.mp4"
+  - "C:/transmetric/trafficdata/video/testcam_lincoln/76_899.615.h264"
 
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
