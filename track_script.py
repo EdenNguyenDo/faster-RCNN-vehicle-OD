@@ -9,11 +9,15 @@ from ocsort_tracker.tracking_utils import apply_nms, create_track_file
 
 def run_track(args):
 
-    # detection_data = args.detection_data.replace("\\", "/")
-    # output = args.output.replace("\\", "/")
 
-    detection_data_filepath = args.detection_data
-    output = args.output
+    detection_data = args.detection_input_folder
+    output = args.track_output_dir
+
+    if "\\" in detection_data:
+        detection_data_filepath = args.detection_input_folder.replace("\\", "/")
+    if "\\" in output:
+        output = args.output.replace("\\", "/")
+
 
     tracker = OCSort(det_thresh=args.track_thresh, lower_det_thresh=args.lower_track_thresh, iou_threshold=args.iou_thresh, use_byte=args.use_byte,
                      inertia=args.inertia, min_hits=args.min_hits, max_age=args.track_buffer, asso_func=args.asso, delta_t=args.deltat)

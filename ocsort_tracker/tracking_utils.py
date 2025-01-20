@@ -5,7 +5,6 @@ import csv
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import torch
 from torchvision.ops.boxes import box_area, nms
-from loguru import logger
 
 
 def create_track_file(output_dir, folder_path, track_id):

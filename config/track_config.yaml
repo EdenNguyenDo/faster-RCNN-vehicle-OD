@@ -39,21 +39,21 @@ hp: false  # Use head padding to add missing objects during track initialization
 demo_type: "image"  # Demo type (image, video, or webcam)
 path: "videos/dance_demo.mp4"  # Path to images or video
 camid: 0  # Webcam demo camera ID
-save_result: false  # Whether to save the inference result of image/video
+save_result: true  # Whether to save the inference result of image/video
 aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio above this value
 min_box_area: 8  # Filter out tiny boxes
 device: "gpu"  # Device to run the model (cpu or gpu)
 
-detection_input_folder: "C:/transmetric/dev/python/AI_camera/output/detections/goschen/saved_raw_detections/021-00004_Mon_Wed_44hrs_2000/2024_1202_180404_001A/2024_1202_180404_001A_2024_1214_012436_raw_detection"
-track_output_dir: "C:/transmetric/dev/python/AI_camera/output/tracks/goschen/v1/021-00004_Mon_Wed_44hrs_2000"
+detection_input_folder: "../detections_folder/detections_folder1"
+track_output_dir: "C:/transmetric/dev/python/AI_camera/trial/output"
 
 # INFERENCE CONFIGURATION
 camera_index: 0
 live: False
 debug: False
 save_detection: True
-detection_files_output_dir: "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/example_det_dir"
-detection_videos_output_dir: "C:/transmetric/dev/python/AI_camera/output/videos/v1/goschen"
+detection_files_output_dir: "C:/transmetric/dev/python/AI_camera/trial/output"
+detection_videos_output_dir: "C:/transmetric/dev/python/AI_camera/trial/output"
 video_list:
   - "C:/transmetric/trafficdata/video/goschen/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A.MP4"
 

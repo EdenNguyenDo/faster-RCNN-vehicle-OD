@@ -1,13 +1,8 @@
 
-import os
 from collections import deque
-from time import perf_counter
-
 import cv2
 import numpy as np
-import torch
 import csv
-
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 from config.coco_classes import COCO_91_CLASSES
 from ocsort_tracker.src.ocsort import OCSort
@@ -36,15 +31,16 @@ class OCS_tracker:
 
     def operate_tracking(self, detections, frame, frame_number, frame_dim):
 
-        # detection_data = track_args.detection_data.replace("\\", "/")
-        # output = track_args.output.replace("\\", "/")
+        output = self.track_args.track_output_dir
+
+        if "\\" in output:
+            output = self.track_args.output.replace("\\", "/")
 
         self.all_classes = []
         self.all_ids = []
         self.all_tlwhs = []
 
-        detection_data_filepath = self.track_args.detection_data
-        output = self.track_args.output
+
         line_count_dict = {}
 
         converted_detections = convert_frcnn_detections(detections,self.classes)
@@ -69,16 +65,13 @@ class OCS_tracker:
                     online_tlwhs.append(tlwh)
                     online_ids.append(tid)
                     online_classes.append(class_id)
-                    # self.results.append(
-                    #     f"{frame_number},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},1.0,-1,-1,-1\n"
-                    # )
-                    #
+
                     # Update line count for the current tid
                     if tid not in line_count_dict:
                         line_count_dict[tid] = 0
                     # Only proceed to save track if the line count is below the threshold
                     if line_count_dict[tid] <= self.track_args.max_exist and self.track_args.save_result:
-                        track_file = create_track_file(output, detection_data_filepath, int(tid))
+                        track_file = create_track_file(output, self.track_args.video_list, int(tid))
                         save_tracks(track_file,frame_number,tid,tlwh)
 
 
