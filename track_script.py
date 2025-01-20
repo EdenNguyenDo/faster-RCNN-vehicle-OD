@@ -65,7 +65,7 @@ def run_track(args):
 
                         # Only proceed if the line count is below the threshold
                         if line_count_dict[tid] <= args.max_exist:
-                            track_file = create_track_file(output, detection_data_filepath, int(tid))
+                            track_file = create_track_file(output, int(tid), detection_folder=detection_data_filepath)
 
                             with open(track_file, 'a', newline='') as csvfile:
                                 csv_writer = csv.writer(csvfile)

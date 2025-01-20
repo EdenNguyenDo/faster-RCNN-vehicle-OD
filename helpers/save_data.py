@@ -46,7 +46,7 @@ def create_log_files(live, video, video_out_dir):
 
     # Construct the path for saved counts in the application's directory
     saved_log_dir = os.path.join(base_dir, 'saved_inferred_log', video_dir)
-    directory_path = os.path.join(video_out_dir, video_dir)
+    directory_path = os.path.join(video_out_dir,"inferred_videos", video_dir)
 
     # Ensure the directory exists
     os.makedirs(directory_path, exist_ok=True)

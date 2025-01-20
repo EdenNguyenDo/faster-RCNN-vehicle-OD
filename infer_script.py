@@ -111,7 +111,7 @@ def infer(args):
                     ######################################## OC-Sort tracker integration ###########################################
                     ################################################################################################################
 
-                    online_im = tracker.operate_tracking(detections, frame, frame_count, frame_dim)
+                    online_im = tracker.operate_tracking(detections, frame, frame_count, frame_dim, video)
 
 
                     det_fps = 1 / (time.time() - det_start_time)

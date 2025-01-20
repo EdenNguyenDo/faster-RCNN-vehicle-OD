@@ -7,9 +7,14 @@ import torch
 from torchvision.ops.boxes import box_area, nms
 
 
-def create_track_file(output_dir, folder_path, track_id):
+def create_track_file(output_dir, track_id,video_path = None, detection_folder = None):
 
-    full_path = os.path.join(output_dir, folder_path.split('/')[-2])
+    if video_path is not None and detection_folder is None:
+        full_path = os.path.join(output_dir, "track_results", video_path.split('/')[-2], video_path.split('/')[-1].split(".")[0])
+    elif detection_folder is not None and video_path is None:
+        full_path = os.path.join(output_dir, "track_results", detection_folder.split('/')[-2])
+    else:
+        full_path = os.path.join(output_dir, "track_results")
 
     # Ensure the directory exists
     os.makedirs(full_path, exist_ok=True)

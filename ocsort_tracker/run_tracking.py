@@ -29,7 +29,7 @@ class OCS_tracker:
 
 
 
-    def operate_tracking(self, detections, frame, frame_number, frame_dim):
+    def operate_tracking(self, detections, frame, frame_number, frame_dim, video):
 
         output = self.track_args.track_output_dir
 
@@ -71,7 +71,7 @@ class OCS_tracker:
                         line_count_dict[tid] = 0
                     # Only proceed to save track if the line count is below the threshold
                     if line_count_dict[tid] <= self.track_args.max_exist and self.track_args.save_result:
-                        track_file = create_track_file(output, self.track_args.video_list, int(tid))
+                        track_file = create_track_file(output, int(tid), video_path=video)
                         save_tracks(track_file,frame_number,tid,tlwh)
 
 
