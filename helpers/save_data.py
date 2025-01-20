@@ -91,7 +91,7 @@ def create_detection_directory(live, video, output_dir):
     #os.makedirs(det_directory_path, exist_ok=True)
     os.makedirs(raw_directory_path, exist_ok=True)
 
-    det_filename = f"{date_video_name}_detection"
+    #det_filename = f"{date_video_name}_detection"
     raw_filename = f"{date_video_name}_raw_detection"
 
     #det_filepath = os.path.join(det_directory_path, det_filename)
@@ -99,9 +99,6 @@ def create_detection_directory(live, video, output_dir):
 
     return raw_filepath
 
-# create_video_directory():
-#
-#     return
 
 
 
