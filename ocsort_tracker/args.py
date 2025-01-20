@@ -69,10 +69,8 @@ def make_parser(config_path=None):
     parser.add_argument("--device", default=get_config_value('device', "gpu"), type=str, help="Device to run the model (cpu or gpu)")
 
     # Detection File Path
-    parser.add_argument('--detection_data', default=config.get("detection_data"), type=str, help="Path to the raw detection file")
-    parser.add_argument('--output', default=config.get("output"), type=str, help="Path to the output directory")
-
-
+    parser.add_argument('--detection_input_folder', default=get_config_value("detection_input_folder", "./detections_folder/detections_folder1"), type=str, help="Path to the raw detection file")
+    parser.add_argument('--track_output_dir', default=get_config_value("track_output_dir","../output/track_folder"), type=str, help="Path to the output directory")
 
 
 
@@ -103,12 +101,12 @@ def make_parser(config_path=None):
 
     parser.add_argument(
         '--detection_files_output_dir',
-        default=get_config_value('detection_files_output_dir', "./output/detection_files")
+        default=get_config_value('detection_files_output_dir', "../output/detection_files")
     )
 
     parser.add_argument(
         '--detection_videos_output_dir',
-        default=get_config_value('detection_videos_output_dir', "./output/inferred_videos")
+        default=get_config_value('detection_videos_output_dir', "../output/inferred_videos")
     )
 
     parser.add_argument(

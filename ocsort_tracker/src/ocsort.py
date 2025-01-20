@@ -150,7 +150,6 @@ class KalmanBoxTracker(object):
             if len(self.history_observations) > self.max_age:
                 self.history_observations = self.history_observations[-self.max_age:]
 
-            print(f"Observations: {len(self.observations)}, History Observations: {len(self.history_observations)}")
 
             self.time_since_update = 0
             self.history = []

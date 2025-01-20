@@ -1,5 +1,3 @@
-import csv
-from argparse import ArgumentParser
 
 import numpy as np
 import torch
@@ -7,8 +5,6 @@ import torchvision
 import cv2
 import os
 import time
-
-from helpers.setup_infer_config import setup_argument_parser
 from helpers.save_data import create_log_files, create_detection_directory
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
@@ -167,6 +163,6 @@ def infer(args):
 if __name__ == '__main__':
     args = make_parser("./config/track_config.yaml").parse_args()
     if args.video_track:
-        run_track(args)
-    else:
         infer(args)
+    else:
+        run_track(args)

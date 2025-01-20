@@ -236,9 +236,7 @@ def associate(detections, trackers, class_id, iou_threshold, velocities, previou
     valid_mask = np.ones(previous_obs.shape[0])
     valid_mask[np.where(previous_obs[:,4]<0)] = 0
 
-    start_time = time.time()
     iou_matrix = iou_batch(detections, trackers)
-    print(f"IoU computation time: {time.time() - start_time:.3f}s")
     scores = np.repeat(detections[:,-1][:, np.newaxis], trackers.shape[0], axis=1)
 
     # iou_matrix = iou_matrix * scores # a trick some items works, we don't encourage this

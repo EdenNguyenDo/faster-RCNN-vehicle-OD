@@ -44,8 +44,8 @@ aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio abov
 min_box_area: 8  # Filter out tiny boxes
 device: "gpu"  # Device to run the model (cpu or gpu)
 
-detection_files_input: "C:/transmetric/dev/python/AI_camera/output/detections/goschen/saved_raw_detections/021-00004_Mon_Wed_44hrs_2000/2024_1202_180404_001A/2024_1202_180404_001A_2024_1214_012436_raw_detection"
-track_output: "C:/transmetric/dev/python/AI_camera/output/tracks/goschen/v1/021-00004_Mon_Wed_44hrs_2000"
+detection_input_folder: "C:/transmetric/dev/python/AI_camera/output/detections/goschen/saved_raw_detections/021-00004_Mon_Wed_44hrs_2000/2024_1202_180404_001A/2024_1202_180404_001A_2024_1214_012436_raw_detection"
+track_output_dir: "C:/transmetric/dev/python/AI_camera/output/tracks/goschen/v1/021-00004_Mon_Wed_44hrs_2000"
 
 # INFERENCE CONFIGURATION
 camera_index: 0
