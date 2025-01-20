@@ -33,12 +33,8 @@ class OCS_tracker:
 
         output = self.track_args.track_output_dir
 
-
         if "\\" in output:
             output = self.track_args.output.replace("\\", "/")
-
-        if "\\" in video:
-            video = video.replace("\\", "/")
 
         self.all_classes = []
         self.all_ids = []

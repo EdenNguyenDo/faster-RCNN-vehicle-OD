@@ -62,6 +62,10 @@ def infer(args):
         cap = cv2.VideoCapture(args.camera_index)
     else:
         for video in args.video_list:
+            if "\\" in video:
+                video = video.replace("\\", "/")
+
+
             log_filepath, video_directory = create_log_files(args.live,video, detection_videos_output_dir)
             raw_det_file_dir = create_detection_directory(args.live, video, detection_files_output_dir)
 
@@ -172,7 +176,9 @@ def infer(args):
 
 if __name__ == '__main__':
     args = make_parser("./config/track_config.yaml").parse_args()
-    if args.video_track == "false":
+    if args.video_track:
+        print("Running video tracking... \n")
         infer(args)
     else:
+        print("Running detection files tracking... \n")
         run_track(args)
