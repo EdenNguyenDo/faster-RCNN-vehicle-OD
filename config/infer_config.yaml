@@ -2,26 +2,16 @@ camera_index: 0
 live: False
 debug: False
 save_detection: True
-input_video: "C:/transmetric/trafficdata/video/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
-lines_file_path: "./lines_data/2024_0323_120137_100A_line_data_2_3_2.csv"
 
-detection_output_dir: "C:/transmetric/dev/python/AI_camera/output/detections/lincoln_drive"
+detection_files_output_dir: "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/example_det_dir"
+detection_videos_output_dir: "C:/transmetric/dev/python/AI_camera/output/videos/v1/goschen"
 video_list:
-  - "C:/transmetric/trafficdata/video/testcam_lincoln/76_899.615.h264"
-
+  - "C:/transmetric/trafficdata/video/goschen/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A.MP4"
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
-score_threshold: 0.8
-detect_threshold: 0.8
-max_frame_track: 30
-byte_track_embedder: "mobilenet"
 img_size: 0
 show: True
-cls_to_track:
-  - 1
-  - 2
-  - 3
-  - 6
-  - 8
 evaluate: True
-infer_samples: True
+
+video_track: True
+files_track: False
