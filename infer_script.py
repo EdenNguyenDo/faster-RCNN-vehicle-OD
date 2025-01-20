@@ -39,6 +39,16 @@ def infer(args):
     print(f"Detector: {args.pretrained_model}")
 
 
+    detection_videos_output_dir = args.detection_videos_output_dir
+    detection_files_output_dir = args.detection_files_output_dir
+
+    if "\\" in detection_videos_output_dir:
+        detection_videos_output_dir = args.detection_videos_output_dir.replace("\\", "/")
+    if "\\" in detection_files_output_dir:
+        detection_files_output_dir = args.detection_files_output_dir.replace("\\", "/")
+
+
+
     # Load model.
     model = getattr(torchvision.models.detection, args.pretrained_model)(weights='DEFAULT')
 
@@ -52,8 +62,8 @@ def infer(args):
         cap = cv2.VideoCapture(args.camera_index)
     else:
         for video in args.video_list:
-            log_filepath, video_directory = create_log_files(args.live,video, args.detection_videos_output_dir)
-            raw_det_file_dir = create_detection_directory(args.live, video, args.detection_files_output_dir)
+            log_filepath, video_directory = create_log_files(args.live,video, detection_videos_output_dir)
+            raw_det_file_dir = create_detection_directory(args.live, video, detection_files_output_dir)
 
             tracker = OCS_tracker(args)
 
@@ -162,7 +172,7 @@ def infer(args):
 
 if __name__ == '__main__':
     args = make_parser("./config/track_config.yaml").parse_args()
-    if args.video_track:
+    if args.video_track == "false":
         infer(args)
     else:
         run_track(args)

@@ -44,7 +44,7 @@ aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio abov
 min_box_area: 8  # Filter out tiny boxes
 device: "gpu"  # Device to run the model (cpu or gpu)
 
-detection_input_folder: "../detections_folder/detections_folder1"
+detection_input_folder: "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/detections_folder/detections_folder1"
 track_output_dir: "C:/transmetric/dev/python/AI_camera/trial/output"
 
 # INFERENCE CONFIGURATION
@@ -63,6 +63,6 @@ show: True
 evaluate: True
 
 # Set video_track to true for video inferences and tracking
-video_track: true
+video_track: "true"
 
 

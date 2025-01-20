@@ -1,6 +1,19 @@
 import argparse
 import yaml
 
+
+
+def str2bool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() == 'true':
+        return True
+    elif value.lower() == 'false':
+        return False
+    else:
+        raise argparse.ArgumentTypeError(f"Boolean value expected, got '{value}'.")
+
+
 def make_parser(config_path=None):
     # Initialize config to None by default
     config = None
@@ -55,23 +68,17 @@ def make_parser(config_path=None):
     parser.add_argument("--public", action="store_true", help="Use public detection")
     parser.add_argument('--asso', default=get_config_value('asso', "giou"), help="Similarity function: iou/giou/diou/ciou/ctdis")
     parser.add_argument("--use_byte", dest="use_byte", default=get_config_value('use_byte', True), action="store_true", help="Use byte in tracking.")
-
-
     parser.add_argument("--hp", action="store_true", help="Use head padding to add missing objects during initializing the tracks (offline).")
 
     # Demo Video Settings
-    parser.add_argument("--demo_type", default=get_config_value('demo_type', "video"), help="Demo type (image, video, or webcam)")
-    parser.add_argument("--path", default=get_config_value('path', "./videos/dance_demo.mp4"), help="Path to images or video")
-    parser.add_argument("--camid", type=int, default=get_config_value('camid', 0), help="Webcam demo camera ID")
     parser.add_argument("--save_result", default=True, help="Whether to save the inference result of image/video")
     parser.add_argument("--aspect_ratio_thresh", type=float, default=get_config_value('aspect_ratio_thresh', 1.5), help="Threshold for filtering out boxes of which aspect ratio is above the given value.")
     parser.add_argument('--min_box_area', type=float, default=get_config_value('min_box_area', 8), help='Filter out tiny boxes')
     parser.add_argument("--device", default=get_config_value('device', "gpu"), type=str, help="Device to run the model (cpu or gpu)")
 
     # Detection File Path
-    parser.add_argument('--detection_input_folder', default=get_config_value("detection_input_folder", "./detections_folder/detections_folder1"), type=str, help="Path to the raw detection file")
+    parser.add_argument('--detection_input_folder', default=get_config_value("detection_input_folder", "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/detections_folder/detections_folder1"), type=str, help="Path to the raw detection file")
     parser.add_argument('--track_output_dir', default=get_config_value("track_output_dir","../output/track_folder"), type=str, help="Path to the output directory")
-
 
 
     parser.add_argument(
@@ -95,7 +102,7 @@ def make_parser(config_path=None):
     parser.add_argument(
         '--live',
         default = config.get('live', False),
-        type = bool,
+        type = str2bool,
         help='live inference or not'
     )
 
@@ -160,14 +167,14 @@ def make_parser(config_path=None):
         '--evaluate',
         dest='evaluate',
         default=get_config_value('evaluate', False),
-        type=bool,
+        type=str2bool,
         help='Flag to enable evaluation mode'
     )
 
     parser.add_argument(
         '--video_track',
         default=get_config_value('video_track', True),
-        type=bool,
+        type=str2bool,
         help='set to run tracking and inferencing with videos on TRUE'
     )
 

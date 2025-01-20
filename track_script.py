@@ -10,10 +10,10 @@ from ocsort_tracker.tracking_utils import apply_nms, create_track_file
 def run_track(args):
 
 
-    detection_data = args.detection_input_folder
+    detection_data_filepath = args.detection_input_folder
     output = args.track_output_dir
 
-    if "\\" in detection_data:
+    if "\\" in detection_data_filepath:
         detection_data_filepath = args.detection_input_folder.replace("\\", "/")
     if "\\" in output:
         output = args.output.replace("\\", "/")
