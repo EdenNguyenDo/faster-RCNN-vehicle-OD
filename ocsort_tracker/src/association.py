@@ -255,7 +255,7 @@ def associate(detections, trackers, class_id, iou_threshold, velocities, previou
     # cate_matrix = np.zeros((num_dets, num_trk))
     # for i in range(num_dets):
     #     for j in range(num_trk):
-    #         if det_cates[i] != trackers[j, 4]:
+    #         if class_id[i] != trackers[j, 4]:
     #             cate_matrix[i][j] = -1e6
     #
     # cost_matrix = - iou_matrix - angle_diff_cost - cate_matrix
