@@ -26,9 +26,9 @@ def run_track(args):
     line_count_dict = {}
 
     # Read detections from the specified folder
-    # detections = read_detections_from_csv_folder(detection_data_filepath)
+    detections = read_detections_from_csv_folder(detection_data_filepath)
     # detections = read_detections_from_h5("C:/transmetric/AI_system/output/raw_detections/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A/2024_1203_065010_023A_2025_0121_154759_raw_detection/detections.h5")
-    detections = read_detections_from_parquet(detection_data_filepath)
+    # detections = read_detections_from_parquet(detection_data_filepath)
 
     sorted_keys = sorted(detections.keys())
 

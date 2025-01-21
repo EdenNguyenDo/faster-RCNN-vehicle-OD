@@ -119,10 +119,10 @@ def infer(args):
 
                     # Save raw detection if there is detections
                     # if len(detections['labels'])>=0:
-                        # save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
+                    save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
                         # save_detections_h5(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
                         # save_detections_parquet(raw_det_file_dir, frame_count, detections, args.classes_to_track)
-                    save_detections_parquet_optimized(raw_det_file_dir, frame_number=frame_count, detections=detections, classes=args.classes_to_track)
+                    # save_detections_parquet_optimized(raw_det_file_dir, frame_number=frame_count, detections=detections, classes=args.classes_to_track)
 
                     ################################################################################################################
                     ######################################## OC-Sort tracker integration ###########################################

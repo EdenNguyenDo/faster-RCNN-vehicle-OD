@@ -155,19 +155,24 @@ def save_detections(filedir, frame_number, detections, classes, detect_threshold
     labels = detections['labels'].cpu().numpy()
     scores = detections['scores'].cpu().numpy()
 
-    lbl_mask = np.isin(labels, classes)
+    # Handle empty detections
+    if boxes.shape[0] == 0:  # No detections
+        outputs = []
+    else:
+        # Filter detections by the specified classes
+        lbl_mask = np.isin(labels, classes)
+        scores = scores[lbl_mask]
+        labels = labels[lbl_mask]
+        boxes = boxes[lbl_mask]
 
-    scores = scores[lbl_mask]
-    labels = labels[lbl_mask]
-    boxes = boxes[lbl_mask]
-
-    outputs = []
-    for i, box in enumerate(boxes):
-        label = int(labels[i])  # Ensure labels are converted to Python int
-        score = float(scores[i])  # Convert Numpy float32 to Python float
-        xmin, ymin, xmax, ymax = map(float, box)  # Convert all box coordinates to Python float
-        output = [xmin, ymin, xmax, ymax, score, label]
-        outputs.append(output)
+        # Prepare outputs
+        outputs = []
+        for i, box in enumerate(boxes):
+            label = int(labels[i])  # Ensure labels are converted to Python int
+            score = float(scores[i])  # Convert Numpy float32 to Python float
+            xmin, ymin, xmax, ymax = map(float, box)  # Convert all box coordinates to Python float
+            output = [xmin, ymin, xmax, ymax, score, label]
+            outputs.append(output)
 
     # Ensure the output directory exists
     os.makedirs(filedir, exist_ok=True)
