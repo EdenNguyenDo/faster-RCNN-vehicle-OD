@@ -48,36 +48,35 @@ class OCS_tracker:
         # Apply NMS to remove overlapping boxes.
         detections_nms = apply_nms(converted_detections, self.track_args.nms_iou_thresh)
 
+        # if detections_nms[0] is not None:
+        online_targets = self.tracker.update(detections_nms[0], frame_dim[0], frame_dim[1])
+        online_tlwhs = []
+        online_ids = []
+        online_classes =[]
+        for t in online_targets:
+            tlwh = [int(t[0]), int(t[1]), int(t[2] - t[0]), int(t[3] - t[1])]
+            tid = int(t[4])
+            class_id = int(t[5])
 
-        if detections_nms[0] is not None:
-            online_targets = self.tracker.update(detections_nms[0], frame_dim[0], frame_dim[1])
-            online_tlwhs = []
-            online_ids = []
-            online_classes =[]
-            for t in online_targets:
-                tlwh = [int(t[0]), int(t[1]), int(t[2] - t[0]), int(t[3] - t[1])]
-                tid = int(t[4])
-                class_id = int(t[5])
+            vertical = tlwh[2] < tlwh[3]
 
-                vertical = tlwh[2] < tlwh[3]
+            if tlwh[2] * tlwh[3] > self.track_args.min_box_area and not vertical:
+                online_tlwhs.append(tlwh)
+                online_ids.append(tid)
+                online_classes.append(class_id)
 
-                if tlwh[2] * tlwh[3] > self.track_args.min_box_area and not vertical:
-                    online_tlwhs.append(tlwh)
-                    online_ids.append(tid)
-                    online_classes.append(class_id)
-
-                    # Update line count for the current tid
-                    if tid not in line_count_dict:
-                        line_count_dict[tid] = 0
-                    # Only proceed to save track if the line count is below the threshold
-                    if line_count_dict[tid] <= self.track_args.max_exist and self.track_args.save_result:
-                        track_file = create_track_file(output, int(tid), video_path=video)
-                        save_tracks(track_file,frame_number,tid,tlwh)
+                # Update line count for the current tid
+                if tid not in line_count_dict:
+                    line_count_dict[tid] = 0
+                # Only proceed to save track if the line count is below the threshold
+                if line_count_dict[tid] <= self.track_args.max_exist and self.track_args.save_result:
+                    track_file = create_track_file(output, int(tid), video_path=video)
+                    save_tracks(track_file,frame_number,tid,tlwh)
 
 
-            self.all_tlwhs += online_tlwhs
-            self.all_ids += online_ids
-            self.all_classes += online_classes
+        self.all_tlwhs += online_tlwhs
+        self.all_ids += online_ids
+        self.all_classes += online_classes
 
 
         if len(self.history) < self.track_args.track_buffer:

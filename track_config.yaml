@@ -8,11 +8,8 @@ cls_to_track:
   - 8
 
 # Detection Parameters
-ckpt: null  # Checkpoint for evaluation
 conf: 0.12  # Confidence threshold for detection
 nms: 0.1  # Non-maximum suppression threshold
-tsize: null  # Test image size (optional)
-seed: null  # Evaluation seed (optional)
 
 # Tracking Parameters
 track_thresh: 0.85  # Detection confidence threshold for tracking
@@ -38,13 +35,12 @@ hp: false  # Use head padding to add missing objects during track initialization
 # Demo Video Settings
 demo_type: "image"  # Demo type (image, video, or webcam)
 path: "videos/dance_demo.mp4"  # Path to images or video
-camid: 0  # Webcam demo camera ID
 save_result: true  # Whether to save the inference result of image/video
 aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio above this value
 min_box_area: 8  # Filter out tiny boxes
 device: "gpu"  # Device to run the model (cpu or gpu)
 
-detection_input_folder: "C:/transmetric/AI_system/output/raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2025_0121_172836_raw_detection/p_detections.parquet"
+detection_input_folder: "C:/transmetric/AI_system/output/raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2025_0122_103213_raw_detection"
 track_output_dir: "C:/transmetric/AI_system/output"
 
 # INFERENCE CONFIGURATION
@@ -55,7 +51,6 @@ save_detection: True
 detection_files_output_dir: "C:/transmetric/AI_system/output"
 detection_videos_output_dir: "C:/transmetric/AI_system/output"
 video_list:
-  - "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/video/video_traffic_2.mp4"
   - "C:/transmetric/trafficdata/video/goschen/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
 
 pretrained_model: "fasterrcnn_resnet50_fpn"

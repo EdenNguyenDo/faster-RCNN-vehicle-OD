@@ -226,7 +226,10 @@ class OCSort(object):
         NOTE: The number of objects returned may differ from the number of detections provided.
         """
 
-        if output_results is None:
+        if output_results.numel() == 0:
+            if len(self.trackers) > 0:
+                for tracklet in self.trackers:
+                    tracklet.time_since_update += 1
             return np.empty((0, 5))
 
         self.frame_count += 1

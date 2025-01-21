@@ -37,50 +37,52 @@ def run_track(args):
 
         outputs_by_frame = detections[frame_number]
 
-        if len(outputs_by_frame) > 0:
+        # if len(outputs_by_frame) > 0:
+        detections_tensor = [torch.tensor(outputs_by_frame, dtype=torch.float32)]
 
-            detections_tensor = [torch.tensor(outputs_by_frame, dtype=torch.float32)]
-
+        if detections_tensor[0].numel() != 0:
             # Apply NMS to remove overlapping boxes.
             detections_nms = apply_nms(detections_tensor, args.nms_iou_thresh)
+        else:
+            detections_nms = detections_tensor
 
-            if detections_tensor[0] is not None:
-                online_targets = tracker.update(detections_nms[0], 480, 640)
-                online_tlwhs = []
-                online_ids = []
-                online_classes = []
-                for t in online_targets:
-                    tlwh = [int(t[0]), int(t[1]), int(t[2] - t[0]), int(t[3] - t[1])]
-                    tid = int(t[4])
-                    class_id = int(t[5])
 
-                    vertical = tlwh[2] < tlwh[3]
+        online_targets = tracker.update(detections_nms[0], 480, 640)
+        online_tlwhs = []
+        online_ids = []
+        online_classes = []
+        for t in online_targets:
+            tlwh = [int(t[0]), int(t[1]), int(t[2] - t[0]), int(t[3] - t[1])]
+            tid = int(t[4])
+            class_id = int(t[5])
 
-                    if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
-                        online_tlwhs.append(tlwh)
-                        online_ids.append(tid)
-                        online_classes.append(class_id)
+            vertical = tlwh[2] < tlwh[3]
 
-                        # Update line count for the current tid
-                        if tid not in line_count_dict:
-                            line_count_dict[tid] = 0
+            if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
+                online_tlwhs.append(tlwh)
+                online_ids.append(tid)
+                online_classes.append(class_id)
 
-                        # Only proceed if the line count is below the threshold
-                        if line_count_dict[tid] <= args.max_exist:
-                            track_file = create_track_file(output, int(tid), detection_folder=detection_data_filepath)
+                # Update line count for the current tid
+                if tid not in line_count_dict:
+                    line_count_dict[tid] = 0
 
-                            with open(track_file, 'a', newline='') as csvfile:
-                                csv_writer = csv.writer(csvfile)
-                                if csvfile.tell() == 0:
-                                    csv_writer.writerow(
-                                        ["frame_number", "track_id", "class_id", "score", "x_topleft", "y_topleft",
-                                         "width", "height"])
+                # Only proceed if the line count is below the threshold
+                if line_count_dict[tid] <= args.max_exist:
+                    track_file = create_track_file(output, int(tid), detection_folder=detection_data_filepath)
 
-                                csv_writer.writerow([
-                                    frame_number, int(tid), int(class_id), 0,
-                                    round(tlwh[0], 1), round(tlwh[1], 1),
-                                    round(tlwh[2], 1), round(tlwh[3], 1)
-                                ])
+                    with open(track_file, 'a', newline='') as csvfile:
+                        csv_writer = csv.writer(csvfile)
+                        if csvfile.tell() == 0:
+                            csv_writer.writerow(
+                                ["frame_number", "track_id", "class_id", "score", "x_topleft", "y_topleft",
+                                 "width", "height"])
 
-                                # Increment line count for tid
-                                line_count_dict[tid] += 1
+                        csv_writer.writerow([
+                            frame_number, int(tid), int(class_id), 0,
+                            round(tlwh[0], 1), round(tlwh[1], 1),
+                            round(tlwh[2], 1), round(tlwh[3], 1)
+                        ])
+
+                        # Increment line count for tid
+                        line_count_dict[tid] += 1
