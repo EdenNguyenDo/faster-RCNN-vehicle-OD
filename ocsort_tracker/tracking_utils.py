@@ -220,7 +220,7 @@ def save_detections_h5(filedir, frame_number, detections, classes, detect_thresh
 
 
 
-def save_detections_parquet_optimized(filedir, frame_number, detections, classes, buffer_limit=500, flush=False):
+def save_detections_parquet_optimized(filedir, frame_number, detections, classes, buffer_limit=1000, flush=False):
     """
     Saves frame detections to a Parquet file more efficiently by using a buffer.
     Handles cases where there are no detections by saving empty rows.
@@ -292,7 +292,7 @@ def save_detections_parquet_optimized(filedir, frame_number, detections, classes
             buffer_df = df
 
         # Write buffer back to temporary file
-        buffer_df.to_parquet(buffer_path, engine="fastparquet", index=False)
+        buffer_df.to_parquet(buffer_path, engine="fastparquet",compression="snappy", index=False)
 
         # If buffer exceeds limit, flush to main Parquet file
         if len(buffer_df) >= buffer_limit:
@@ -303,7 +303,7 @@ def save_detections_parquet_optimized(filedir, frame_number, detections, classes
                 combined_df = buffer_df
 
             # Write combined DataFrame back to the main file
-            combined_df.to_parquet(parquet_path, engine="fastparquet", index=False)
+            combined_df.to_parquet(parquet_path, engine="fastparquet", compression="snappy", index=False)
 
             # Clear the buffer
             os.remove(buffer_path)
@@ -319,7 +319,7 @@ def save_detections_parquet_optimized(filedir, frame_number, detections, classes
                 combined_df = buffer_df
 
             # Write combined DataFrame back to the main file
-            combined_df.to_parquet(parquet_path, engine="fastparquet", index=False)
+            combined_df.to_parquet(parquet_path, engine="fastparquet",compression="snappy", index=False)
 
             # Clear the buffer
             os.remove(buffer_path)
