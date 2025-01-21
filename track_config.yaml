@@ -55,6 +55,7 @@ save_detection: True
 detection_files_output_dir: "C:/transmetric/AI_system/output"
 detection_videos_output_dir: "C:/transmetric/AI_system/output"
 video_list:
+  - "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/video/video_traffic_2.mp4"
   - "C:/transmetric/trafficdata/video/goschen/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
@@ -63,6 +64,6 @@ show: True
 evaluate: True
 
 # Set video_track to true for video inferences and tracking
-video_track: False
+video_track: True
 
 
