@@ -5,6 +5,7 @@ import csv
 import h5py
 import pandas as pd
 import fastparquet
+import pyarrow
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import torch
 from torchvision.ops.boxes import box_area, nms
@@ -286,24 +287,24 @@ def save_detections_parquet_optimized(filedir, frame_number, detections, classes
 
         # Append to buffer
         if os.path.exists(buffer_path):
-            buffer_df = pd.read_parquet(buffer_path, engine="fastparquet")
+            buffer_df = pd.read_parquet(buffer_path, engine="pyarrow")
             buffer_df = pd.concat([buffer_df, df], ignore_index=True)
         else:
             buffer_df = df
 
         # Write buffer back to temporary file
-        buffer_df.to_parquet(buffer_path, engine="fastparquet",compression="snappy", index=False)
+        buffer_df.to_parquet(buffer_path, engine="pyarrow",compression="snappy", index=False)
 
         # If buffer exceeds limit, flush to main Parquet file
         if len(buffer_df) >= buffer_limit:
             if os.path.exists(parquet_path):
-                existing_df = pd.read_parquet(parquet_path, engine="fastparquet")
+                existing_df = pd.read_parquet(parquet_path, engine="pyarrow")
                 combined_df = pd.concat([existing_df, buffer_df], ignore_index=True)
             else:
                 combined_df = buffer_df
 
             # Write combined DataFrame back to the main file
-            combined_df.to_parquet(parquet_path, engine="fastparquet", compression="snappy", index=False)
+            combined_df.to_parquet(parquet_path, engine="pyarrow", compression="snappy", index=False)
 
             # Clear the buffer
             os.remove(buffer_path)
@@ -311,15 +312,15 @@ def save_detections_parquet_optimized(filedir, frame_number, detections, classes
     # If flushing, write remaining buffer to the main Parquet file
     else:
         if os.path.exists(buffer_path):
-            buffer_df = pd.read_parquet(buffer_path, engine="fastparquet")
+            buffer_df = pd.read_parquet(buffer_path, engine="pyarrow")
             if os.path.exists(parquet_path):
-                existing_df = pd.read_parquet(parquet_path, engine="fastparquet")
+                existing_df = pd.read_parquet(parquet_path, engine="pyarrow")
                 combined_df = pd.concat([existing_df, buffer_df], ignore_index=True)
             else:
                 combined_df = buffer_df
 
             # Write combined DataFrame back to the main file
-            combined_df.to_parquet(parquet_path, engine="fastparquet",compression="snappy", index=False)
+            combined_df.to_parquet(parquet_path, engine="pyarrow",compression="snappy", index=False)
 
             # Clear the buffer
             os.remove(buffer_path)
