@@ -175,7 +175,7 @@ def infer(args):
 
 
 if __name__ == '__main__':
-    args = make_parser("./config/track_config.yaml").parse_args()
+    args = make_parser("track_config.yaml").parse_args()
     if args.video_track:
         print("Running video tracking... \n")
         infer(args)
