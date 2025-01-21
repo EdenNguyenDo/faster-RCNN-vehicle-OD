@@ -11,7 +11,8 @@ from config.coco_classes import COCO_91_CLASSES
 from ocsort_tracker.args import make_parser
 
 from ocsort_tracker.run_tracking import OCS_tracker
-from ocsort_tracker.tracking_utils import save_detections
+from ocsort_tracker.tracking_utils import save_detections, save_detections_h5, save_detections_parquet, \
+    save_detections_parquet_optimized
 from track_script import run_track
 
 """
@@ -119,7 +120,10 @@ def infer(args):
 
                     # Save raw detection if there is detections
                     if len(detections['labels'])>0:
-                        save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
+                        # save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
+                        # save_detections_h5(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
+                        # save_detections_parquet(raw_det_file_dir, frame_count, detections, args.classes_to_track)
+                        save_detections_parquet_optimized(raw_det_file_dir, frame_count, detections, args.classes_to_track)
 
                     ################################################################################################################
                     ######################################## OC-Sort tracker integration ###########################################

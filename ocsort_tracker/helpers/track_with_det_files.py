@@ -1,5 +1,9 @@
-import os
 import csv
+import os
+import pandas as pd
+import h5py
+import numpy as np
+
 
 def read_detections_from_csv_folder(folder_path):
     """
@@ -48,3 +52,42 @@ def read_detections_from_csv_folder(folder_path):
                 print(f"Error processing file {file_name}: {e}")
 
     return detection_dict
+
+
+def read_detections_from_h5(h5_filepath):
+    """
+    Reads detections from an HDF5 file.
+
+    Args:
+        h5_filepath (str): Path to the HDF5 file.
+
+    Returns:
+        dict: A dictionary where keys are frame numbers (int) and values are numpy arrays of detections.
+    """
+    detections = {}
+    with h5py.File(h5_filepath, 'r') as h5file:
+        for frame_key in h5file.keys():
+            frame_number = int(frame_key)  # Convert string keys back to integers
+            detections[frame_number] = h5file[frame_key][:]
+    return detections
+
+
+def read_detections_from_parquet(parquet_path):
+    """
+    Reads detections from a Parquet file and returns them sorted by frame number.
+
+    Args:
+        parquet_path (str): Path to the Parquet file.
+
+    Returns:
+        dict: A dictionary where keys are frame numbers (int) and values are DataFrames of detections.
+    """
+    df = pd.read_parquet(parquet_path)
+    df = df.sort_values(by="frame_number")  # Ensure rows are sorted by frame number
+
+    # Group by frame number and return as a dictionary
+    detections_by_frame = {
+        frame_number: group.drop(columns=["frame_number"]).to_numpy()
+        for frame_number, group in df.groupby("frame_number")
+    }
+    return detections_by_frame

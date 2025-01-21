@@ -2,7 +2,7 @@ import csv
 
 import torch
 
-from ocsort_tracker.helpers.track_with_det_files import read_detections_from_csv_folder
+from ocsort_tracker.helpers.track_with_det_files import read_detections_from_csv_folder, read_detections_from_h5, read_detections_from_parquet
 from ocsort_tracker.src.ocsort import OCSort
 from ocsort_tracker.tracking_utils import apply_nms, create_track_file
 
@@ -26,7 +26,9 @@ def run_track(args):
     line_count_dict = {}
 
     # Read detections from the specified folder
-    detections = read_detections_from_csv_folder(detection_data_filepath)
+    # detections = read_detections_from_csv_folder(detection_data_filepath)
+    detections = read_detections_from_h5("C:/transmetric/AI_system/output/raw_detections/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A/2024_1203_065010_023A_2025_0121_154759_raw_detection/detections.h5")
+    # detections = read_detections_from_parquet("C:/transmetric/AI_system/output/raw_detections/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A/2024_1203_065010_023A_2025_0121_153808_raw_detection/detections.h5")
 
     sorted_keys = sorted(detections.keys())
 
