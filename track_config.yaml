@@ -44,7 +44,7 @@ aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio abov
 min_box_area: 8  # Filter out tiny boxes
 device: "gpu"  # Device to run the model (cpu or gpu)
 
-detection_input_folder: "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/detections_folder/detections_folder1"
+detection_input_folder: "C:/transmetric/AI_system/output/raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2025_0121_172836_raw_detection/p_detections.parquet"
 track_output_dir: "C:/transmetric/AI_system/output"
 
 # INFERENCE CONFIGURATION
@@ -55,7 +55,7 @@ save_detection: True
 detection_files_output_dir: "C:/transmetric/AI_system/output"
 detection_videos_output_dir: "C:/transmetric/AI_system/output"
 video_list:
-  - "C:/transmetric/trafficdata/video/goschen/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A.MP4"
+  - "C:/transmetric/trafficdata/video/goschen/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
 img_size: 0
@@ -63,6 +63,6 @@ show: True
 evaluate: True
 
 # Set video_track to true for video inferences and tracking
-video_track: True
+video_track: False
 
 

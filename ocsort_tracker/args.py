@@ -77,7 +77,7 @@ def make_parser(config_path=None):
     parser.add_argument("--device", default=get_config_value('device', "gpu"), type=str, help="Device to run the model (cpu or gpu)")
 
     # Detection File Path
-    parser.add_argument('--detection_input_folder', default=get_config_value("detection_input_folder", "C:/transmetric/dev/python/AI_camera/trial/FRCNN+OCS/detections_folder/detections_folder1"), type=str, help="Path to the raw detection file")
+    parser.add_argument('--detection_input_folder', default=get_config_value("detection_input_folder", "C:/transmetric/AI_system/output/raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2025_0121_172836_raw_detection/p_detections.parquet"), type=str, help="Path to the raw detection file")
     parser.add_argument('--track_output_dir', default=get_config_value("track_output_dir","../output/track_folder"), type=str, help="Path to the output directory")
 
 

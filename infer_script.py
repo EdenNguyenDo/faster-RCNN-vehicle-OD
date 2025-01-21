@@ -11,8 +11,7 @@ from config.coco_classes import COCO_91_CLASSES
 from ocsort_tracker.args import make_parser
 
 from ocsort_tracker.run_tracking import OCS_tracker
-from ocsort_tracker.tracking_utils import save_detections, save_detections_h5, save_detections_parquet, \
-    save_detections_parquet_optimized
+from ocsort_tracker.tracking_utils import save_detections, save_detections_h5, save_detections_parquet_optimized
 from track_script import run_track
 
 """
@@ -119,11 +118,11 @@ def infer(args):
 
 
                     # Save raw detection if there is detections
-                    if len(detections['labels'])>0:
+                    # if len(detections['labels'])>=0:
                         # save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
                         # save_detections_h5(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
                         # save_detections_parquet(raw_det_file_dir, frame_count, detections, args.classes_to_track)
-                        save_detections_parquet_optimized(raw_det_file_dir, frame_count, detections, args.classes_to_track)
+                    save_detections_parquet_optimized(raw_det_file_dir, frame_number=frame_count, detections=detections, classes=args.classes_to_track)
 
                     ################################################################################################################
                     ######################################## OC-Sort tracker integration ###########################################
@@ -169,6 +168,14 @@ def infer(args):
 
                 cv2.destroyAllWindows()
 
+                # Flush remaining buffer to the main Parquet file at the end of the video
+                save_detections_parquet_optimized(
+                    raw_det_file_dir,
+                    frame_number=None,
+                    detections=None,
+                    classes=None,
+                    flush=True
+                )
                 # Only write the completion message if processing was completed successfully.
                 # if completed_successfully:
                 #     with open(log_filepath, 'a', newline='', encoding='utf-8') as file:

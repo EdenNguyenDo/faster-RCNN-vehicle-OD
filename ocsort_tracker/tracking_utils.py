@@ -220,11 +220,11 @@ def save_detections_h5(filedir, frame_number, detections, classes, detect_thresh
 
 
 
-
-
-def save_detections_parquet_optimized(filedir, frame_number, detections, classes, buffer_limit=500):
+def save_detections_parquet_optimized(filedir, frame_number, detections, classes, buffer_limit=500, flush=False):
     """
     Saves frame detections to a Parquet file more efficiently by using a buffer.
+    Handles cases where there are no detections by saving empty rows.
+    Flushes remaining data in the buffer at the end of the video.
 
     Args:
         filedir (str): Directory to save the Parquet file.
@@ -232,53 +232,94 @@ def save_detections_parquet_optimized(filedir, frame_number, detections, classes
         detections (dict): Detections for the frame.
         classes (list): List of classes to include.
         buffer_limit (int): Number of frames to buffer before writing to Parquet.
+        flush (bool): If True, flushes the buffer to the main Parquet file.
     """
     os.makedirs(filedir, exist_ok=True)
-
 
     # Buffer file path (to accumulate data temporarily)
     buffer_path = os.path.join(filedir, "buffer.parquet")
     parquet_path = os.path.join(filedir, "p_detections.parquet")
 
-    # Prepare detections for the current frame
-    boxes = detections['boxes'].cpu().numpy()
-    labels = detections['labels'].cpu().numpy()
-    scores = detections['scores'].cpu().numpy()
+    # Define the schema (column names and dtypes)
+    schema = {
+        "frame_number": "int",
+        "xmin": "float",
+        "ymin": "float",
+        "xmax": "float",
+        "ymax": "float",
+        "score": "float",
+        "label": "float"
+    }
 
-    lbl_mask = np.isin(labels, classes)
-    scores = scores[lbl_mask]
-    labels = labels[lbl_mask]
-    boxes = boxes[lbl_mask]
+    # If not flushing, process the current frame
+    if not flush:
+        if len(detections['labels']) > 0:
+            boxes = detections['boxes'].cpu().numpy()
+            labels = detections['labels'].cpu().numpy()
+            scores = detections['scores'].cpu().numpy()
 
-    records = []
-    for i, box in enumerate(boxes):
-        label = int(labels[i])
-        score = float(scores[i])
-        xmin, ymin, xmax, ymax = map(float, box)
-        records.append([frame_number, xmin, ymin, xmax, ymax, score, label])
+            lbl_mask = np.isin(labels, classes)
+            scores = scores[lbl_mask]
+            labels = labels[lbl_mask]
+            boxes = boxes[lbl_mask]
 
-    df = pd.DataFrame(records, columns=["frame_number", "xmin", "ymin", "xmax", "ymax", "score", "label"])
+            # Prepare detections DataFrame
+            records = []
+            for i, box in enumerate(boxes):
+                label = int(labels[i])
+                score = float(scores[i])
+                xmin, ymin, xmax, ymax = map(float, box)
+                records.append([frame_number, xmin, ymin, xmax, ymax, score, label])
 
-    # Append to buffer
-    if os.path.exists(buffer_path):
-        buffer_df = pd.read_parquet(buffer_path, engine="fastparquet")
-        buffer_df = pd.concat([buffer_df, df], ignore_index=True)
-    else:
-        buffer_df = df
-
-    # Write buffer back to temporary file
-    buffer_df.to_parquet(buffer_path, engine="fastparquet", index=False)
-
-    # If buffer exceeds limit, flush to main Parquet file
-    if len(buffer_df) >= buffer_limit:
-        if os.path.exists(parquet_path):
-            existing_df = pd.read_parquet(parquet_path, engine="fastparquet")
-            combined_df = pd.concat([existing_df, buffer_df], ignore_index=True)
+            df = pd.DataFrame(records, columns=schema.keys()).astype(schema)
         else:
-            combined_df = buffer_df
+            # Create an empty DataFrame for frames without detections
+            df = pd.DataFrame({
+                "frame_number": [frame_number],
+                "xmin": [np.nan],
+                "ymin": [np.nan],
+                "xmax": [np.nan],
+                "ymax": [np.nan],
+                "score": [np.nan],
+                "label": [np.nan]
+            }).astype(schema)
 
-        # Write combined DataFrame back to the main file
-        combined_df.to_parquet(parquet_path, engine="fastparquet", index=False)
+        # Append to buffer
+        if os.path.exists(buffer_path):
+            buffer_df = pd.read_parquet(buffer_path, engine="fastparquet")
+            buffer_df = pd.concat([buffer_df, df], ignore_index=True)
+        else:
+            buffer_df = df
 
-        # Clear the buffer
-        os.remove(buffer_path)
+        # Write buffer back to temporary file
+        buffer_df.to_parquet(buffer_path, engine="fastparquet", index=False)
+
+        # If buffer exceeds limit, flush to main Parquet file
+        if len(buffer_df) >= buffer_limit:
+            if os.path.exists(parquet_path):
+                existing_df = pd.read_parquet(parquet_path, engine="fastparquet")
+                combined_df = pd.concat([existing_df, buffer_df], ignore_index=True)
+            else:
+                combined_df = buffer_df
+
+            # Write combined DataFrame back to the main file
+            combined_df.to_parquet(parquet_path, engine="fastparquet", index=False)
+
+            # Clear the buffer
+            os.remove(buffer_path)
+
+    # If flushing, write remaining buffer to the main Parquet file
+    else:
+        if os.path.exists(buffer_path):
+            buffer_df = pd.read_parquet(buffer_path, engine="fastparquet")
+            if os.path.exists(parquet_path):
+                existing_df = pd.read_parquet(parquet_path, engine="fastparquet")
+                combined_df = pd.concat([existing_df, buffer_df], ignore_index=True)
+            else:
+                combined_df = buffer_df
+
+            # Write combined DataFrame back to the main file
+            combined_df.to_parquet(parquet_path, engine="fastparquet", index=False)
+
+            # Clear the buffer
+            os.remove(buffer_path)
