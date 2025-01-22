@@ -7,3 +7,4 @@ h5py==3.12.1
 numpy~=2.2.2
 pandas==2.2.3
 opencv-python~=4.10.0.84
+pillow==11.0.0

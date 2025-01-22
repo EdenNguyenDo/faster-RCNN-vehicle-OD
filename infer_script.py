@@ -47,7 +47,7 @@ def infer(args):
 
 
 
-    # Load model.
+    # Load torchvision model.
     model = getattr(torchvision.models.detection, args.pretrained_model)(weights='DEFAULT')
 
     # Set model to evaluation mode.
