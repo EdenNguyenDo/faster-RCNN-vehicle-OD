@@ -71,7 +71,7 @@ def make_parser(config_path=None):
     parser.add_argument("--hp", action="store_true", help="Use head padding to add missing objects during initializing the tracks (offline).")
 
     # Demo Video Settings
-    parser.add_argument("--save_result", default=True, help="Whether to save the inference result of image/video")
+    parser.add_argument("--save_result", default=get_config_value('save_track', True), help="Whether to save the inference result of image/video")
     parser.add_argument("--aspect_ratio_thresh", type=float, default=get_config_value('aspect_ratio_thresh', 1.5), help="Threshold for filtering out boxes of which aspect ratio is above the given value.")
     parser.add_argument('--min_box_area', type=float, default=get_config_value('min_box_area', 8), help='Filter out tiny boxes')
     parser.add_argument("--device", default=get_config_value('device', "gpu"), type=str, help="Device to run the model (cpu or gpu)")

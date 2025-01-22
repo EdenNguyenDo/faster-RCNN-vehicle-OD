@@ -8,11 +8,9 @@ import time
 from helpers.save_data import create_log_files, create_detection_directory
 from torchvision.transforms import ToTensor
 from config.coco_classes import COCO_91_CLASSES
-from ocsort_tracker.args import make_parser
 
 from ocsort_tracker.run_tracking import OCS_tracker
-from ocsort_tracker.tracking_utils import save_detections, save_detections_h5, save_detections_parquet_optimized
-from track_script import run_track
+from ocsort_tracker.tracking_utils import save_detections
 
 """
 Running inference with object tracking with faster R-CNN model and a tracker
@@ -104,7 +102,7 @@ def infer(args):
                     if args.img_size != 0:
                         resized_frame = cv2.resize(
                             cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
-                            (args.img_size, args.img_size)
+                            frame_dim
                         )
                     else:
                         resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -117,12 +115,9 @@ def infer(args):
                         detections = model([frame_tensor])[0]
 
 
-                    # Save raw detection if there is detections
-                    # if len(detections['labels'])>=0:
+                    # Save detections to csv file for each frame
                     save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
-                        # save_detections_h5(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
-                        # save_detections_parquet(raw_det_file_dir, frame_count, detections, args.classes_to_track)
-                    # save_detections_parquet_optimized(raw_det_file_dir, frame_number=frame_count, detections=detections, classes=args.classes_to_track)
+
 
                     ################################################################################################################
                     ######################################## OC-Sort tracker integration ###########################################
@@ -168,14 +163,6 @@ def infer(args):
 
                 cv2.destroyAllWindows()
 
-                # Flush remaining buffer to the main Parquet file at the end of the video
-                save_detections_parquet_optimized(
-                    raw_det_file_dir,
-                    frame_number=None,
-                    detections=None,
-                    classes=None,
-                    flush=True
-                )
                 # Only write the completion message if processing was completed successfully.
                 # if completed_successfully:
                 #     with open(log_filepath, 'a', newline='', encoding='utf-8') as file:
@@ -183,13 +170,3 @@ def infer(args):
                 #         writer.writerow(["Counting and saving completed smoothly without interruption"])
 
 
-
-
-if __name__ == '__main__':
-    args = make_parser("track_config.yaml").parse_args()
-    if args.video_track:
-        print("Running video tracking... \n")
-        infer(args)
-    else:
-        print("Running detection files tracking... \n")
-        run_track(args)

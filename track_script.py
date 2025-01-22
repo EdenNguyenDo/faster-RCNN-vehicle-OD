@@ -2,13 +2,18 @@ import csv
 
 import torch
 
-from ocsort_tracker.helpers.track_with_det_files import read_detections_from_csv_folder, read_detections_from_h5, read_detections_from_parquet
+from ocsort_tracker.helpers.track_with_det_files import read_detections_from_csv_folder
+from ocsort_tracker.run_tracking import save_tracks
 from ocsort_tracker.src.ocsort import OCSort
 from ocsort_tracker.tracking_utils import apply_nms, create_track_file
 
 
 def run_track(args):
-
+    """
+    This function runs tracking algorithm with detection folders.
+    :param args:
+    :return:
+    """
 
     detection_data_filepath = args.detection_input_folder
     output = args.track_output_dir
@@ -21,14 +26,11 @@ def run_track(args):
 
     tracker = OCSort(det_thresh=args.track_thresh, lower_det_thresh=args.lower_track_thresh, iou_threshold=args.iou_thresh, use_byte=args.use_byte,
                      inertia=args.inertia, min_hits=args.min_hits, max_age=args.track_buffer, asso_func=args.asso, delta_t=args.deltat)
-    results = []
 
     line_count_dict = {}
 
     # Read detections from the specified folder
     detections = read_detections_from_csv_folder(detection_data_filepath)
-    # detections = read_detections_from_h5("C:/transmetric/AI_system/output/raw_detections/067-00006_Mon_Wed_44hrs_2000/2024_1203_065010_023A/2024_1203_065010_023A_2025_0121_154759_raw_detection/detections.h5")
-    # detections = read_detections_from_parquet(detection_data_filepath)
 
     sorted_keys = sorted(detections.keys())
 
@@ -71,18 +73,8 @@ def run_track(args):
                 if line_count_dict[tid] <= args.max_exist:
                     track_file = create_track_file(output, int(tid), detection_folder=detection_data_filepath)
 
-                    with open(track_file, 'a', newline='') as csvfile:
-                        csv_writer = csv.writer(csvfile)
-                        if csvfile.tell() == 0:
-                            csv_writer.writerow(
-                                ["frame_number", "track_id", "class_id", "score", "x_topleft", "y_topleft",
-                                 "width", "height"])
+                    save_tracks(track_file,frame_number,tid,class_id,tlwh)
 
-                        csv_writer.writerow([
-                            frame_number, int(tid), int(class_id), 0,
-                            round(tlwh[0], 1), round(tlwh[1], 1),
-                            round(tlwh[2], 1), round(tlwh[3], 1)
-                        ])
+                    # Increment line count for tid
+                    line_count_dict[tid] += 1
 
-                        # Increment line count for tid
-                        line_count_dict[tid] += 1
