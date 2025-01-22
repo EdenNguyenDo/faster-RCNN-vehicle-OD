@@ -32,14 +32,11 @@ use_byte: true  # Use Byte in tracking
 hp: false  # Use head padding to add missing objects during track initialization (offline)
 
 # Demo Video Settings
-demo_type: "image"  # Demo type (image, video, or webcam)
-path: "videos/dance_demo.mp4"  # Path to images or video
 save_track: True  # Whether to save the inference result of image/video
 aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio above this value
-min_box_area: 8  # Filter out tiny boxes
 device: "gpu"  # Device to run the model (cpu or gpu)
 
-detection_input_folder: "C:/transmetric/AI_system/output/raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2025_0122_110519_raw_detection"
+detection_input_folder: "C:/transmetric/dev/python/AI_camera/output/detections/goschen/saved_raw_detections/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A/2024_1204_154045_002A_2024_1218_104501_raw_detection"
 track_output_dir: "C:/transmetric/AI_system/output"
 
 # INFERENCE CONFIGURATION
@@ -53,7 +50,7 @@ video_list:
   - "C:/transmetric/trafficdata/video/goschen/067-00007_Wed_Thur_27hrs_1500/2024_1204_154045_002A.MP4"
 
 pretrained_model: "fasterrcnn_resnet50_fpn"
-img_size: 0
+resize: True
 show: True
 evaluate: True
 
