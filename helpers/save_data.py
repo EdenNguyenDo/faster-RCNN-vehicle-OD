@@ -86,9 +86,11 @@ def create_detection_directory(live, video, output_dir):
 
     #det_directory_path = os.path.join(saved_det_dir, video_name)
     raw_directory_path = os.path.join(saved_raw_det_dir, video_name)
+    zipped_detection_dir = os.path.join(base_dir, 'zipped_raw_detections')
+
 
     # Ensure the directory exists
-    #os.makedirs(det_directory_path, exist_ok=True)
+    os.makedirs(zipped_detection_dir, exist_ok=True)
     os.makedirs(raw_directory_path, exist_ok=True)
 
     #det_filename = f"{date_video_name}_detection"

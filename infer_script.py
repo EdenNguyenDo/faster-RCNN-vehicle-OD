@@ -99,7 +99,7 @@ def infer(args):
                     if not ret:
                         break
 
-                    if args.img_size != 0:
+                    if args.resize != 0:
                         resized_frame = cv2.resize(
                             cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
                             frame_dim

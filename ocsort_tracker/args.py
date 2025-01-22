@@ -124,9 +124,9 @@ def make_parser(config_path=None):
     )
 
     parser.add_argument(
-        '--img_size',
-        default=get_config_value('img_size', 0),
-        type = int,
+        '--resize',
+        default=get_config_value('resize', False),
+        type=str2bool,
         help='Image resize; e.g., 640 will resize images to 640x640'
     )
 
