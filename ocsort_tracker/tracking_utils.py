@@ -2,10 +2,6 @@ import cv2
 import numpy as np
 import os
 import csv
-import h5py
-import pandas as pd
-import fastparquet
-import pyarrow
 from config.VEHICLE_CLASS import VEHICLE_CLASSES
 import torch
 from torchvision.ops.boxes import box_area, nms

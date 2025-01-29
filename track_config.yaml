@@ -32,7 +32,7 @@ use_byte: true  # Use Byte in tracking
 hp: false  # Use head padding to add missing objects during track initialization (offline)
 
 # Demo Video Settings
-save_track: True  # Whether to save the inference result of image/video
+save_track: False  # Whether to save the inference result of image/video
 aspect_ratio_thresh: 1.5  # Threshold for filtering boxes with aspect ratio above this value
 device: "gpu"  # Device to run the model (cpu or gpu)
 
@@ -43,7 +43,7 @@ track_output_dir: "C:/transmetric/AI_system/output"
 camera_index: 0
 live: False
 debug: False
-save_detection: True
+save_detection: False
 detection_files_output_dir: "C:/transmetric/AI_system/output"
 detection_videos_output_dir: "C:/transmetric/AI_system/output"
 video_list:
@@ -55,6 +55,6 @@ show: True
 evaluate: True
 
 # Set video_track to true for video inferences and tracking
-video_track: False
+video_track: True
 
 
