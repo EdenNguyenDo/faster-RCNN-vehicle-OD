@@ -1,4 +1,4 @@
-# Traffic data processing and couting system
+# Traffic data processing and counting system
 
 ### Description 
 
@@ -15,7 +15,7 @@ The video or realtime stream is processed frame by frame where each frame is ana
 #### Object detection model
 
 In respect to the OD model, Faster R-CNN is used as the main model for outputting detections with bounding boxes.
-It is used together with resnet-50 that serves as the backbone network for feature extraction. 
+It is used with FPN and resnet-50 that serves as the backbone network for feature extraction. 
 
 With the use of Faster R-CNN, the models accuracy and mAP is significantly improved compared to other two-shot detection model.
 However, the trade-off between speed and accuracy is considerable as it computing speed is slower compared to other single-shot
