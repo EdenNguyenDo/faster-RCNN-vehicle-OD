@@ -23,9 +23,7 @@ model such as SSD or YOLO variations.
 
 #### Multi object tracking
 
-Bytetrack algorithm and model is being utilised as a way to assign ID to keep track of objects/bounding boxes in frames.
-
-Bytetrack is integrated with the system as it evaluates and tracks the objects detected by the OD model.
+OC-Sort with BYTE is being utilised as a way to assign ID to keep track of objects/bounding boxes in frames.
 
 The usage of tracking here is crucial as it plays an important role in counting objects or vehicles. Without the usage of 
 tracking, the model does not have a unique identifier for each object inside a frame or multiple frames leading to the
