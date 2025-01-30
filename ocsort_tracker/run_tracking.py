@@ -1,10 +1,5 @@
 
 from collections import deque
-import cv2
-import numpy as np
-import csv
-from config.VEHICLE_CLASS import VEHICLE_CLASSES
-from config.coco_classes import COCO_91_CLASSES
 from ocsort_tracker.src.ocsort import OCSort
 from ocsort_tracker.tracking_utils import convert_frcnn_detections, apply_nms, create_track_file, \
     convert_history_to_dict, save_tracks, plot_tracking
