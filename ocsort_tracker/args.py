@@ -88,9 +88,9 @@ def make_parser(config_path=None):
     )
 
     parser.add_argument(
-        '--save_det',
+        '--save_detection',
         default=get_config_value('save_detection', True),
-        help='Indicator of savinga all detections produced'
+        help='Indicator of saving all detections produced'
     )
 
     parser.add_argument(

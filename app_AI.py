@@ -4,13 +4,17 @@ from track_script import run_track
 
 
 def main():
-    args = make_parser("track_config.yaml").parse_args()
-    if args.video_track:
-        print("Running video tracking... \n")
-        infer(args)
-    else:
-        print("Running detection files tracking... \n")
-        run_track(args)
+    # allows testing of different config files in one run
+    config_file_paths = ["track_config.yaml"]
+    for config_file in config_file_paths:
+        args = make_parser(config_file).parse_args()
+        if args.video_track:
+            print(f"Running video tracking with config file {config_file}... \n")
+            infer(args)
+        else:
+            #todo check multi-config file tracking
+            print(f"Running detection files tracking with config file {config_file}... \n")
+            run_track(args)
 
 if __name__ == '__main__':
     main()

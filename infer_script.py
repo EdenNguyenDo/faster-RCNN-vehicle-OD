@@ -1,3 +1,4 @@
+from time import perf_counter
 
 import numpy as np
 import torch
@@ -102,7 +103,7 @@ def infer(args):
                     if args.resize != 0:
                         resized_frame = cv2.resize(
                             cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
-                            frame_dim
+                            (640,640)
                         )
                     else:
                         resized_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -110,14 +111,16 @@ def infer(args):
                     frame_tensor = ToTensor()(resized_frame).to(device)
 
                     # Feed frame to model and get detections - these are in xyxy format, not normalised.
-                    det_start_time = time.time()
+                    det_start_time = perf_counter()
                     with torch.no_grad():
                         detections = model([frame_tensor])[0]
+                    det_fps = 1 / (perf_counter() - det_start_time)
 
 
                     # Save detections to csv file for each frame
                     save_detections(raw_det_file_dir, frame_count, detections, args.classes_to_track, args.detect_threshold)
 
+                    #frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
 
                     ################################################################################################################
                     ######################################## OC-Sort tracker integration ###########################################
@@ -126,7 +129,6 @@ def infer(args):
                     online_im = tracker.operate_tracking(detections, frame, frame_count, frame_dim, video)
 
 
-                    det_fps = 1 / (time.time() - det_start_time)
 
                     if args.debug_mode is True:
                         print(f"Frame {frame_count}",
